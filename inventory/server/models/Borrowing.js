@@ -19,4 +19,13 @@ const borrowingSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
+// Indexes for performance optimization
+borrowingSchema.index({ itemId: 1 }); // Lookup by item
+borrowingSchema.index({ employeeId: 1 }); // Search by employee
+borrowingSchema.index({ employeeName: 1 }); // Search/filter by name
+borrowingSchema.index({ status: 1 }); // Filter by status (borrowed, returned, etc.)
+borrowingSchema.index({ borrowDate: -1 }); // Sort by borrow date
+borrowingSchema.index({ expectedReturnDate: 1 }); // Find overdue items
+borrowingSchema.index({ itemId: 1, status: 1 }); // Compound index for item availability
+
 module.exports = mongoose.model('Borrowing', borrowingSchema);

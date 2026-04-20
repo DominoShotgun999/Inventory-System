@@ -23,4 +23,12 @@ const itemSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
+// Indexes for performance optimization
+itemSchema.index({ name: 1 }); // Search by name
+itemSchema.index({ 'category.main': 1 }); // Filter by category
+itemSchema.index({ status: 1 }); // Filter by status
+itemSchema.index({ location: 1 }); // Filter by location
+itemSchema.index({ serialNumber: 1 }); // Lookup by serial number
+itemSchema.index({ name: 'text', description: 'text' }); // Full text search
+
 module.exports = mongoose.model('Item', itemSchema);
