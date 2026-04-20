@@ -1,0 +1,2952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Inventory System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.8em;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .notification-badge {
+            position: relative;
+            display: inline-block;
+            background: #f8f9fa;
+            color: #333;
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border: 1px solid #ced4da;
+            cursor: pointer;
+        }
+        .notification-badge.unread {
+            background: #ff5252;
+            color: white;
+            border: 1px solid #e3342f;
+        }
+        
+        .user-name {
+            text-align: right;
+        }
+        
+        .btn-logout {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-logout:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .card-title {
+            color: #333;
+            font-size: 1.2em;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .card-description {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        
+        .card-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+        
+        .card-link:hover {
+            text-decoration: underline;
+        }
+        
+        .section-title {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            margin-top: 40px;
+        }
+        
+        .items-list {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            color: #333;
+            font-weight: 600;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #666;
+        }
+        
+        tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+        
+        .btn-edit {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            background: #5568d3;
+        }
+        
+        .btn-delete {
+            background: #f5576c;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background: #e03a4d;
+        }
+        
+        .btn-add {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            margin-bottom: 20px;
+        }
+        
+        .btn-add:hover {
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .status.available {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.borrowed {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status.damaged {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .section-panel {
+            display: none;
+        }
+
+        #dashboardPanel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 15px;
+        }
+        
+        .modal-header h2 {
+            color: #333;
+            margin: 0;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+        
+        .modal-close:hover {
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 0.95em;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 15px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+        }
+        
+        .btn-primary:hover {
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+            padding: 10px 20px;
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .category-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        /* Highlight animation for section navigation */
+        @keyframes highlight {
+            0% { background-color: rgba(102, 126, 234, 0.1); }
+            50% { background-color: rgba(102, 126, 234, 0.2); }
+            100% { background-color: transparent; }
+        }
+
+        /* Row highlight for real-time updates */
+        @keyframes rowHighlight {
+            0% { background-color: #fff8c4; }
+            100% { background-color: transparent; }
+        }
+
+        .row-highlight {
+            animation: rowHighlight 2s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>📦 Inventory Dashboard</h1>
+        </div>
+        <div class="user-info">
+            <div class="notification-badge" id="notificationBadge" onclick="showNotificationsSection()">Notifications (0)</div>
+            <div class="user-name">
+                <p id="userName" style="font-weight: 600;"></p>
+                <p style="font-size: 0.9em; opacity: 0.9;">Admin</p>
+            </div>
+            <button class="btn-logout" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div id="dashboardPanel">
+            <div class="dashboard-grid">
+                <div class="card" onclick="showItemsSection()">
+                <div class="card-icon">📊</div>
+                <div class="card-title">Items</div>
+                <div class="card-description">Manage inventory items</div>
+                <div class="card-link">Click to manage →</div>
+            </div>
+            
+            <div class="card" onclick="showBorrowingsSection()">
+                <div class="card-icon">📋</div>
+                <div class="card-title">Borrowings</div>
+                <div class="card-description">Track borrowed items</div>
+                <div class="card-link">Click to view →</div>
+            </div>
+            
+            <div class="card" onclick="showOverdueSection()">
+                <div class="card-icon">⚠️</div>
+                <div class="card-title">Overdue Items</div>
+                <div class="card-description">Track late returns</div>
+                <div class="card-link">Click to check →</div>
+            </div>
+            
+            <div class="card" onclick="showPaymentsSection()">
+                <div class="card-icon">💰</div>
+                <div class="card-title">Payments</div>
+                <div class="card-description">Damage & repair fees</div>
+                <div class="card-link">Click to manage →</div>
+            </div>
+            
+            <div class="card" onclick="showReportsSection()">
+                <div class="card-icon">📄</div>
+                <div class="card-title">Reports</div>
+                <div class="card-description">Generate & download reports</div>
+                <div class="card-link">Click to generate →</div>
+            </div>
+            
+            <div class="card" onclick="showNotificationsSection()">
+                <div class="card-icon">🔔</div>
+                <div class="card-title">Notifications</div>
+                <div class="card-description">System alerts & messages</div>
+                <div class="card-link">Click to view →</div>
+            </div>
+
+            <div class="card" onclick="showProfileSection()">
+                <div class="card-icon">⚙️</div>
+                <div class="card-title">Profile Settings</div>
+                <div class="card-description">Edit username, password, email</div>
+                <div class="card-link">Click to manage →</div>
+            </div>
+            
+            <div class="card" onclick="showMaintenanceSection()">
+                <div class="card-icon">🔧</div>
+                <div class="card-title">Maintenance</div>
+                <div class="card-description">System maintenance tools</div>
+                <div class="card-link">Click to access →</div>
+            </div>
+            <div class="card" onclick="openBorrowerKiosk()">
+                <div class="card-icon">📺</div>
+                <div class="card-title">TV Borrower Kiosk</div>
+                <div class="card-description">Open survey form for borrowers (kiosk mode)</div>
+                <div class="card-link">Open in new window →</div>
+            </div>
+            <div class="card" onclick="window.open('/inventory/school-id', '_blank')">
+                <div class="card-icon">🆔</div>
+                <div class="card-title">School ID Management</div>
+                <div class="card-description">Manage student ID records</div>
+                <div class="card-link">Click to manage →</div>
+            </div>
+        </div>
+    </div>
+        
+        <div id="items" class="section-panel" style="display: none;">
+            <button class="btn btn-secondary" onclick="showDashboard()" style="margin-bottom: 15px;">← Back to Dashboard</button>
+            <button class="btn btn-secondary" onclick="loadItems()" style="margin-bottom: 15px; margin-left: 10px;">↻ Refresh</button>
+            <h2 class="section-title">📊 Items Inventory</h2>
+            <!-- multi-field filters -->
+            <div id="itemFilters" style="margin-bottom:15px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+                <input type="text" id="itemFilterId" placeholder="ID" style="padding:6px; width:120px;">
+                <input type="text" id="itemFilterName" placeholder="Name" style="padding:6px; width:200px;">
+                <input type="text" id="itemFilterCategory" placeholder="Category" style="padding:6px; width:160px;">
+                <input type="text" id="itemFilterLocation" placeholder="Location" style="padding:6px; width:160px;">
+                <input type="text" id="itemFilterSerial" placeholder="Serial #" style="padding:6px; width:140px;">
+                <button id="itemFilterApply" class="btn btn-secondary" style="height:34px;">Apply</button>
+                <button id="itemFilterClear" class="btn btn-secondary" style="height:34px;">Clear</button>
+            </div>
+            <button class="btn btn-add" onclick="showAddItemForm()">+ Add New Item</button>
+            <div class="items-list">
+                <div id="itemsContainer" class="loading">Loading items...</div>
+            </div>
+        </div>
+        
+        <div id="borrowings" class="section-panel" style="display: none;">
+            <button class="btn btn-secondary" onclick="showDashboard()" style="margin-bottom: 15px;">← Back to Dashboard</button>
+            <button class="btn btn-secondary" onclick="loadBorrowings()" style="margin-bottom: 15px; margin-left: 10px;">↻ Refresh</button>
+            <h2 class="section-title">📋 Borrowings Management</h2>
+            <!-- multi-field borrow filters -->
+            <div id="borrowFilters" style="margin-bottom:15px; display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+                <input type="text" id="borrowFilterEmpName" placeholder="Employee Name" style="padding:6px; width:200px;">
+                <input type="text" id="borrowFilterEmpId" placeholder="Employee ID" style="padding:6px; width:140px;">
+                <input type="text" id="borrowFilterDept" placeholder="Department" style="padding:6px; width:160px;">
+                <input type="text" id="borrowFilterItem" placeholder="Item Name/ID" style="padding:6px; width:180px;">
+                <button id="borrowFilterApply" class="btn btn-secondary" style="height:34px;">Apply</button>
+                <button id="borrowFilterClear" class="btn btn-secondary" style="height:34px;">Clear</button>
+            </div>
+            <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 20px;">
+                <div class="card" onclick="loadBorrowings()">
+                    <div class="card-icon">📋</div>
+                    <div class="card-title">All Borrowings</div>
+                    <div class="card-description">View all borrowing records</div>
+                </div>
+                <div class="card" onclick="loadActiveBorrowings()">
+                    <div class="card-icon">🔄</div>
+                    <div class="card-title">Active Borrowings</div>
+                    <div class="card-description">Currently borrowed items</div>
+                </div>
+                <div class="card" onclick="loadReturnedBorrowings()">
+                    <div class="card-icon">✅</div>
+                    <div class="card-title">Returned Items</div>
+                    <div class="card-description">Completed borrowing records</div>
+                </div>
+                <div class="card" onclick="showCheckBorrowerForm()">
+                    <div class="card-icon">🔍</div>
+                    <div class="card-title">Check Borrower</div>
+                    <div class="card-description">Verify borrowed items by ID</div>
+                </div>
+                <div class="card" onclick="showBorrowingStats()">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Borrowing Stats</div>
+                    <div class="card-description">Statistics and analytics</div>
+                </div>
+            </div>
+            <div class="items-list">
+                <div id="borrowingsContainer" class="loading">Click on a card above to load borrowing data...</div>
+            </div>
+        </div>
+
+        <div id="checkBorrower" class="section-panel" style="display: none;">
+            <button class="btn btn-secondary" onclick="showBorrowingsSection()" style="margin-bottom: 15px;">← Back to Borrowings</button>
+            <h2 class="section-title">🔍 Check Borrower</h2>
+            <div class="items-list" style="max-width: 600px; margin-bottom: 20px;">
+                <div class="form-group">
+                    <label for="checkBorrowerId">Borrower ID (Employee ID or Email)</label>
+                    <input type="text" id="checkBorrowerId" placeholder="Enter employee ID or email" style="padding: 10px; width: 100%;">
+                </div>
+                <button class="btn btn-primary" onclick="checkBorrower()">Check Borrower</button>
+            </div>
+            <div id="borrowerCheckContainer"></div>
+        </div>
+        
+        <div id="overdue" class="section-panel" style="display: none;">
+            <button class="btn btn-secondary" onclick="showDashboard()" style="margin-bottom: 15px;">← Back to Dashboard</button>
+            <button class="btn btn-secondary" onclick="loadOverdue()" style="margin-bottom: 15px; margin-left: 10px;">↻ Refresh</button>
+            <h2 class="section-title">⚠️ Overdue Items Management</h2>
+            <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 20px;">
+                <div class="card" onclick="loadOverdueItems()">
+                    <div class="card-icon">⚠️</div>
+                    <div class="card-title">Overdue Items</div>
+                    <div class="card-description">Items past due date</div>
+                </div>
+                <div class="card" onclick="loadDueToday()">
+                    <div class="card-icon">📅</div>
+                    <div class="card-title">Due Today</div>
+                    <div class="card-description">Items due today</div>
+                </div>
+                <div class="card" onclick="loadDueSoon()">
+                    <div class="card-icon">⏰</div>
+                    <div class="card-title">Due Soon</div>
+                    <div class="card-description">Items due within 3 days</div>
+                </div>
+                <div class="card" onclick="sendOverdueReminders()">
+                    <div class="card-icon">📧</div>
+                    <div class="card-title">Send Reminders</div>
+                    <div class="card-description">Notify borrowers</div>
+                </div>
+            </div>
+            <div class="items-list">
+                <div id="overdueContainer" class="loading">Click on a card above to load overdue data...</div>
+            </div>
+        </div>
+        
+        <div id="payments" class="section-panel" style="display: none;">
+            <button class="btn btn-secondary" onclick="showDashboard()" style="margin-bottom: 15px;">← Back to Dashboard</button>
+            <button class="btn btn-secondary" onclick="loadPayments()" style="margin-bottom: 15px; margin-left: 10px;">↻ Refresh</button>
+            <h2 class="section-title">💰 Payments & Damages Management</h2>
+            <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 20px;">
+                <div class="card" onclick="loadAllPayments()">
+                    <div class="card-icon">💰</div>
+                    <div class="card-title">All Payments</div>
+                    <div class="card-description">View all payment records</div>
+                </div>
+                <div class="card" onclick="loadPendingPayments()">
+                    <div class="card-icon">⏳</div>
+                    <div class="card-title">Pending Payments</div>
+                    <div class="card-description">Unpaid damage fees</div>
+                </div>
+                <div class="card" onclick="loadPaidPayments()">
+                    <div class="card-icon">✅</div>
+                    <div class="card-title">Paid Payments</div>
+                    <div class="card-description">Completed payments</div>
+                </div>
+                <div class="card" onclick="showAddPaymentForm()">
+                    <div class="card-icon">➕</div>
+                    <div class="card-title">Add Payment</div>
+                    <div class="card-description">Record new payment</div>
+                </div>
+            </div>
+            <div class="items-list">
+                <div id="paymentsContainer" class="loading">Click on a card above to load payment data...</div>
+            </div>
+        </div>
+        
+        <div id="reports" class="section-panel" style="display: none;">
+            <button class="btn btn-secondary" onclick="showDashboard()" style="margin-bottom: 15px;">← Back to Dashboard</button>
+            <button class="btn btn-secondary" onclick="loadReports()" style="margin-bottom: 15px; margin-left: 10px;">↻ Refresh</button>
+            <h2 class="section-title">📄 Reports</h2>
+            <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                <div class="card" onclick="generateReport('inventory')">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Inventory Report</div>
+                    <div class="card-description">Complete inventory status</div>
+                </div>
+                <div class="card" onclick="generateReport('borrowings')">
+                    <div class="card-icon">📋</div>
+                    <div class="card-title">Borrowing Report</div>
+                    <div class="card-description">All borrowing records</div>
+                </div>
+                <div class="card" onclick="generateReport('overdue')">
+                    <div class="card-icon">⚠️</div>
+                    <div class="card-title">Overdue Report</div>
+                    <div class="card-description">Items past due date</div>
+                </div>
+                <div class="card" onclick="generateReport('payments')">
+                    <div class="card-icon">💰</div>
+                    <div class="card-title">Payment Report</div>
+                    <div class="card-description">Damage & repair costs</div>
+                </div>
+            </div>
+            <div id="reportStatus" style="margin-top: 20px;"></div>
+        </div>
+        
+        <div id="profile" class="section-panel" style="display: none;">
+            <button class="btn btn-secondary" onclick="showDashboard()" style="margin-bottom: 15px;">← Back to Dashboard</button>
+            <h2 class="section-title">👤 Profile Settings</h2>
+            <div class="items-list" style="max-width: 500px;">
+                <div id="profileStatus"></div>
+                <div class="form-group">
+                    <label for="profileUsername">Username</label>
+                    <input type="text" id="profileUsername" class="form-control" placeholder="Username" />
+                </div>
+                <div class="form-group">
+                    <label for="profileName">Name</label>
+                    <input type="text" id="profileName" class="form-control" placeholder="Full name" />
+                </div>
+                <div class="form-group">
+                    <label for="profileEmail">Email</label>
+                    <input type="email" id="profileEmail" class="form-control" placeholder="example@gmail.com" />
+                </div>
+                <div class="form-group">
+                    <label for="profilePassword">New Password (leave blank to keep current)</label>
+                    <input type="password" id="profilePassword" class="form-control" placeholder="New password" />
+                </div>
+                <button class="btn btn-primary" onclick="updateProfile()">Save Profile</button>
+            </div>
+        </div>
+        
+        <div id="notifications" class="section-panel" style="display: none;">
+            <button class="btn btn-secondary" onclick="showDashboard()" style="margin-bottom: 15px;">← Back to Dashboard</button>
+            <button class="btn btn-secondary" onclick="loadNotifications()" style="margin-bottom: 15px; margin-left: 10px;">↻ Refresh</button>
+            <h2 class="section-title">🔔 Notifications Management</h2>
+            <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-bottom: 20px;">
+                <div class="card" onclick="loadAllNotifications()">
+                    <div class="card-icon">🔔</div>
+                    <div class="card-title">All Notifications</div>
+                    <div class="card-description">View all system notifications</div>
+                </div>
+                <div class="card" onclick="loadUnreadNotifications()">
+                    <div class="card-icon">📬</div>
+                    <div class="card-title">Unread</div>
+                    <div class="card-description">New notifications</div>
+                </div>
+                <div class="card" onclick="loadSystemAlerts()">
+                    <div class="card-icon">🚨</div>
+                    <div class="card-title">System Alerts</div>
+                    <div class="card-description">Important system messages</div>
+                </div>
+                <div class="card" onclick="showAddNotificationForm()">
+                    <div class="card-icon">📤</div>
+                    <div class="card-title">Send Notification</div>
+                    <div class="card-description">Create new notification</div>
+                </div>
+            </div>
+            <div class="items-list">
+                <div id="notificationsContainer" class="loading">Click on a card above to load notifications...</div>
+            </div>
+        </div>
+        
+        <div id="maintenance" class="section-panel" style="display: none;">
+            <button class="btn btn-secondary" onclick="showDashboard()" style="margin-bottom: 15px;">← Back to Dashboard</button>
+            <button class="btn btn-secondary" onclick="runMaintenance('status')" style="margin-bottom: 15px; margin-left: 10px;">↻ Refresh</button>
+            <h2 class="section-title">🔧 System Maintenance</h2>
+            <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                <div class="card" onclick="runMaintenance('backup')">
+                    <div class="card-icon">💾</div>
+                    <div class="card-title">Database Backup</div>
+                    <div class="card-description">Create system backup</div>
+                </div>
+                <div class="card" onclick="runMaintenance('cleanup')">
+                    <div class="card-icon">🧹</div>
+                    <div class="card-title">Data Cleanup</div>
+                    <div class="card-description">Remove old records</div>
+                </div>
+                <div class="card" onclick="runMaintenance('optimize')">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">Optimize Database</div>
+                    <div class="card-description">Improve performance</div>
+                </div>
+                <div class="card" onclick="runMaintenance('logs')">
+                    <div class="card-icon">📝</div>
+                    <div class="card-title">System Logs</div>
+                    <div class="card-description">View system activity</div>
+                </div>
+            </div>
+            <div id="maintenanceStatus" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+    
+    <!-- QR Code Modal -->
+    <div id="qrModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 15px; text-align: center; max-width: 500px;">
+            <h2 id="qrItemName" style="margin-bottom: 20px;"></h2>
+            <img id="qrImage" style="width: 300px; height: 300px; border: 2px solid #667eea; padding: 10px;">
+            <p id="qrItemDetail" style="margin-top: 15px; color: #666;"></p>
+            <button onclick="closeQRModal()" style="margin-top: 20px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">Close</button>
+        </div>
+    </div>
+    
+    <!-- Edit Item Modal -->
+    <div id="editItemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Item</h2>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            
+            <div id="editAlert"></div>
+            
+            <form id="editItemForm">
+                <div class="form-group">
+                    <label for="editItemName">Item Name *</label>
+                    <input type="text" id="editItemName" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editItemDescription">Description</label>
+                    <textarea id="editItemDescription" name="description"></textarea>
+                </div>
+                
+                <!-- Category Section -->
+                <div class="category-section">
+                    <h3 style="margin-top: 0; color: #667eea; margin-bottom: 15px;">📦 Category Details</h3>
+                    
+                    <div class="form-group">
+                        <label for="editCategoryMain">Main Category *</label>
+                        <select id="editCategoryMain" name="categoryMain" required onchange="updateCategoryOptions()">
+                            <option value="">Select Category</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Tools">Tools</option>
+                            <option value="Furniture">Furniture</option>
+                            <option value="Office Supplies">Office Supplies</option>
+                            <option value="Laboratory">Laboratory</option>
+                            <option value="Sports Equipment">Sports Equipment</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editCategoryType">Type *</label>
+                        <select id="editCategoryType" name="categoryType" required>
+                            <option value="">Select Type</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editBrandModel">Brand/Model</label>
+                        <input type="text" id="editBrandModel" name="brandModel" placeholder="e.g., Dell XPS 13, HP LaserJet Pro">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editQuantity">Quantity Available *</label>
+                        <input type="number" id="editQuantity" name="quantity" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editTotalQuantity">Total Quantity *</label>
+                        <input type="number" id="editTotalQuantity" name="totalQuantity" min="1" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editCondition">Condition *</label>
+                        <select id="editCondition" name="condition" required>
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="poor">Poor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editStatus">Status *</label>
+                        <select id="editStatus" name="status" required>
+                            <option value="available">Available</option>
+                            <option value="borrowed">Borrowed</option>
+                            <option value="maintenance">Maintenance</option>
+                            <option value="damaged">Damaged</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editSerialNumber">Serial Number</label>
+                        <input type="text" id="editSerialNumber" name="serialNumber">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editLocation">Location</label>
+                        <input type="text" id="editLocation" name="location" placeholder="e.g., Building A, Shelf 3">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editPurchasePrice">Purchase Price ($)</label>
+                        <input type="number" id="editPurchasePrice" name="purchasePrice" min="0" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="editPurchaseDate">Purchase Date</label>
+                        <input type="date" id="editPurchaseDate" name="purchaseDate">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="editRequiresSupervisorApproval" name="requiresSupervisorApproval">
+                        Requires Supervisor Approval for Borrowing
+                    </label>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Add Item Modal -->
+    <div id="addItemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Item</h2>
+                <button class="modal-close" onclick="closeAddModal()">&times;</button>
+            </div>
+            
+            <div id="addAlert"></div>
+            
+            <form id="addItemForm">
+                <div class="form-group">
+                    <label for="addItemName">Item Name *</label>
+                    <input type="text" id="addItemName" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="addItemDescription">Description</label>
+                    <textarea id="addItemDescription" name="description"></textarea>
+                </div>
+                
+                <!-- Category Section -->
+                <div class="category-section">
+                    <h3 style="margin-top: 0; color: #667eea; margin-bottom: 15px;">📦 Category Details</h3>
+                    
+                    <div class="form-group">
+                        <label for="addCategoryMain">Main Category *</label>
+                        <select id="addCategoryMain" name="categoryMain" required onchange="updateAddCategoryOptions()">
+                            <option value="">Select Category</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Tools">Tools</option>
+                            <option value="Furniture">Furniture</option>
+                            <option value="Office Supplies">Office Supplies</option>
+                            <option value="Laboratory">Laboratory</option>
+                            <option value="Sports Equipment">Sports Equipment</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="addCategoryType">Type *</label>
+                        <select id="addCategoryType" name="categoryType" required>
+                            <option value="">Select Type</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="addBrandModel">Brand/Model</label>
+                        <input type="text" id="addBrandModel" name="brandModel" placeholder="e.g., Dell XPS 13, HP LaserJet Pro">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="addQuantity">Quantity Available *</label>
+                        <input type="number" id="addQuantity" name="quantity" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="addTotalQuantity">Total Quantity *</label>
+                        <input type="number" id="addTotalQuantity" name="totalQuantity" min="1" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="addCondition">Condition *</label>
+                        <select id="addCondition" name="condition" required>
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="poor">Poor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="addStatus">Status *</label>
+                        <select id="addStatus" name="status" required>
+                            <option value="available">Available</option>
+                            <option value="borrowed">Borrowed</option>
+                            <option value="maintenance">Maintenance</option>
+                            <option value="damaged">Damaged</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="addSerialNumber">Serial Number</label>
+                        <input type="text" id="addSerialNumber" name="serialNumber">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="addLocation">Location</label>
+                        <input type="text" id="addLocation" name="location" placeholder="e.g., Building A, Shelf 3">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="addPurchasePrice">Purchase Price ($)</label>
+                        <input type="number" id="addPurchasePrice" name="purchasePrice" min="0" step="0.01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="addPurchaseDate">Purchase Date</label>
+                        <input type="date" id="addPurchaseDate" name="purchaseDate">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="addRequiresSupervisorApproval" name="requiresSupervisorApproval">
+                        Requires Supervisor Approval for Borrowing
+                    </label>
+                </div>
+                
+                <div class="form-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+        const API_BASE = window.location.origin;
+        let authToken = null;
+        const socket = (typeof io === 'function') ? io() : { on: () => {}, emit: () => {} };
+
+            // search state
+            let itemFilterState = {};
+            let borrowFilterState = {};
+            let borrowFilter = 'all';
+
+            function buildQueryString(params) {
+                const parts = [];
+                for (const key in params) {
+                    if (params[key]) {
+                        parts.push(`${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
+                    }
+                }
+                return parts.length ? '?' + parts.join('&') : '';
+            }
+
+
+            // Debounce helper that returns a promise
+            function debounce(func, wait) {
+                let timeout;
+                return function(...args) {
+                    clearTimeout(timeout);
+                    return new Promise((resolve) => {
+                        timeout = setTimeout(async () => {
+                            try {
+                                const result = await func.apply(this, args);
+                                resolve(result);
+                            } catch (e) {
+                                resolve();
+                            }
+                        }, wait);
+                    });
+                };
+            }
+
+            // Highlight a row by item id after rendering
+            function highlightRow(itemId) {
+                if (!itemId) return;
+                const row = document.getElementById(`item-row-${itemId}`);
+                if (!row) return;
+                row.classList.remove('row-highlight');
+                // trigger reflow to restart animation
+                void row.offsetWidth;
+                row.classList.add('row-highlight');
+            }
+
+            // Debounced loaders to avoid rapid repeated refreshes
+            const debouncedLoadItems = debounce(async (highlightId) => {
+                await loadItems();
+                if (highlightId) highlightRow(highlightId);
+            }, 300);
+
+            const debouncedLoadBorrowings = debounce(async () => {
+                await loadBorrowings();
+            }, 300);
+
+            const debouncedLoadOverdue = debounce(async () => {
+                await loadOverdue();
+            }, 300);
+
+            // Real-time updates: refresh lists when server emits events (debounced)
+            socket.on('item-borrowed', (payload) => {
+                console.log('socket:item-borrowed', payload);
+                const itemId = payload?.item?._id || payload?.item;
+                debouncedLoadItems(itemId);
+                debouncedLoadBorrowings();
+                debouncedLoadOverdue();
+                // Open borrowings section and show small banner so admin notices
+                try { showBorrowingsSection(); } catch (e) {}
+                flashBanner('New borrowing recorded');
+            });
+
+            socket.on('item-returned', (payload) => {
+                console.log('socket:item-returned', payload);
+                const itemId = payload?.item?._id || payload?.item;
+                debouncedLoadItems(itemId);
+                debouncedLoadBorrowings();
+                debouncedLoadOverdue();
+                try { showBorrowingsSection(); } catch (e) {}
+                flashBanner('Item returned');
+            });
+
+            socket.on('notification-created', (payload) => {
+                console.log('socket:notification-created', payload);
+                loadNotificationCount();
+                flashBanner('New admin notification: ' + payload.title);
+            });
+        
+        // Check authentication and load data
+        window.addEventListener('load', async () => {
+            authToken = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (!authToken) {
+                window.location.href = '/inventory/admin';
+                return;
+            }
+            
+            try {
+                const userData = JSON.parse(user);
+                document.getElementById('userName').textContent = userData.name || userData.username;
+            } catch (err) {
+                console.error('Error parsing user data');
+            }
+
+            // item filter listeners
+            ['itemFilterId','itemFilterName','itemFilterCategory','itemFilterLocation','itemFilterSerial'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', debounce(async () => {
+                        itemFilterState = {
+                            id: document.getElementById('itemFilterId').value.trim(),
+                            name: document.getElementById('itemFilterName').value.trim(),
+                            category: document.getElementById('itemFilterCategory').value.trim(),
+                            location: document.getElementById('itemFilterLocation').value.trim(),
+                            serialNumber: document.getElementById('itemFilterSerial').value.trim()
+                        };
+                        await loadItems(itemFilterState);
+                    }, 300));
+                }
+            });
+            document.getElementById('itemFilterApply').addEventListener('click', async () => {
+                itemFilterState = {
+                    id: document.getElementById('itemFilterId').value.trim(),
+                    name: document.getElementById('itemFilterName').value.trim(),
+                    category: document.getElementById('itemFilterCategory').value.trim(),
+                    location: document.getElementById('itemFilterLocation').value.trim(),
+                    serialNumber: document.getElementById('itemFilterSerial').value.trim()
+                };
+                await loadItems(itemFilterState);
+            });
+            document.getElementById('itemFilterClear').addEventListener('click', async () => {
+                ['itemFilterId','itemFilterName','itemFilterCategory','itemFilterLocation','itemFilterSerial'].forEach(i=>document.getElementById(i).value='');
+                itemFilterState = {};
+                await loadItems(itemFilterState);
+            });
+
+            // borrowing filter listeners
+            ['borrowFilterEmpName','borrowFilterEmpId','borrowFilterDept','borrowFilterItem'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', debounce(async () => {
+                        borrowFilterState = {
+                            employeeName: document.getElementById('borrowFilterEmpName').value.trim(),
+                            employeeId: document.getElementById('borrowFilterEmpId').value.trim(),
+                            department: document.getElementById('borrowFilterDept').value.trim(),
+                            item: document.getElementById('borrowFilterItem').value.trim()
+                        };
+                        await loadBorrowingsData(borrowFilter, borrowFilterState);
+                    }, 300));
+                }
+            });
+            document.getElementById('borrowFilterApply').addEventListener('click', async () => {
+                borrowFilterState = {
+                    employeeName: document.getElementById('borrowFilterEmpName').value.trim(),
+                    employeeId: document.getElementById('borrowFilterEmpId').value.trim(),
+                    department: document.getElementById('borrowFilterDept').value.trim(),
+                    item: document.getElementById('borrowFilterItem').value.trim()
+                };
+                await loadBorrowingsData(borrowFilter, borrowFilterState);
+            });
+            document.getElementById('borrowFilterClear').addEventListener('click', async () => {
+                ['borrowFilterEmpName','borrowFilterEmpId','borrowFilterDept','borrowFilterItem'].forEach(i=>document.getElementById(i).value='');
+                borrowFilterState = {};
+                await loadBorrowingsData(borrowFilter, borrowFilterState);
+            });
+            
+
+            loadItems();
+            loadBorrowings();
+            loadOverdue();
+            loadPayments();
+            loadNotifications();
+            loadNotificationCount();
+            showDashboard();
+
+            // Refresh notifications and overdue checks periodically
+            setInterval(() => {
+                loadNotificationCount();
+                loadOverdue();
+            }, 30000);
+        });
+
+        // small banner to notify admin of real-time events
+        function flashBanner(message) {
+            let el = document.getElementById('rtBanner');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'rtBanner';
+                el.style.position = 'fixed';
+                el.style.top = '20px';
+                el.style.right = '20px';
+                el.style.padding = '12px 18px';
+                el.style.background = 'rgba(102,122,234,0.95)';
+                el.style.color = 'white';
+                el.style.borderRadius = '8px';
+                el.style.boxShadow = '0 6px 18px rgba(0,0,0,0.15)';
+                el.style.zIndex = 2000;
+                document.body.appendChild(el);
+            }
+            el.textContent = message;
+            el.style.opacity = '1';
+            setTimeout(() => { el.style.opacity = '0'; }, 3500);
+        }
+
+        function openBorrowerKiosk() {
+            window.open('/inventory/borrow-tv', '_blank');
+            flashBanner('Borrower kiosk opened in new tab');
+        }
+        
+        // Logout helper function
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/inventory/admin';
+        }
+
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', logout);
+            logoutBtn.setAttribute('onclick', 'logout()');
+        }
+        
+        // Load items
+        async function loadItems(filters) {
+            // update state
+            if (filters !== undefined) {
+                itemFilterState = filters;
+            } else {
+                filters = itemFilterState;
+            }
+            // show loading state
+            const itemsContainer = document.getElementById('itemsContainer');
+            if (itemsContainer) {
+                itemsContainer.innerHTML = '<div class="loading">Loading items...</div>';
+            }
+            try {
+                let url = `${API_BASE}/api/items`;
+                if (filters && Object.keys(filters).length) {
+                    url += buildQueryString(filters);
+                }
+                console.log('Fetching items with URL:', url);
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load items');
+                
+                const items = await response.json();
+                displayItems(items);
+                return items;
+            } catch (err) {
+                document.getElementById('itemsContainer').innerHTML = `
+                    <div class="empty-state">Error loading items: ${err.message}</div>
+                `;
+                return null;
+            }
+        }
+        
+        // Display items table
+        function displayItems(items) {
+            const container = document.getElementById('itemsContainer');
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div class="empty-state">No items in inventory. Click "Add New Item" to get started!</div>';
+                return;
+            }
+            
+            // sort by category then name
+            items.sort((a, b) => {
+                const aCat = typeof a.category === 'object' ? a.category.main : a.category || '';
+                const bCat = typeof b.category === 'object' ? b.category.main : b.category || '';
+                if (aCat.toLowerCase() < bCat.toLowerCase()) return -1;
+                if (aCat.toLowerCase() > bCat.toLowerCase()) return 1;
+                return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
+            });
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Category / Type</th>
+                            <th>Brand/Model</th>
+                            <th>Quantity</th>
+                            <th>Status</th>
+                            <th>Supervisor Approval</th>
+                            <th>Location</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            let currentCategory = '';
+            items.forEach(item => {
+                const categoryMain = typeof item.category === 'object' ? item.category.main : item.category;
+                const categoryType = typeof item.category === 'object' ? item.category.type : '';
+                const brandModel = typeof item.category === 'object' ? item.category.brandModel : '';
+                
+                if (categoryMain && categoryMain !== currentCategory) {
+                    currentCategory = categoryMain;
+                    html += `
+                        <tr class="category-row"><td colspan="8" style="background:#f0f0f0;font-weight:600;">${currentCategory}</td></tr>
+                    `;
+                }
+                
+                html += `
+                    <tr id="item-row-${item._id}">
+                        <td><strong>${item.name}</strong></td>
+                        <td>${categoryMain} <br/> <small style="color: #999;">${categoryType}</small></td>
+                        <td>${brandModel || 'N/A'}</td>
+                        <td>${item.quantity}/${item.totalQuantity}</td>
+                        <td><span class="status ${item.status}">${item.status}</span></td>
+                        <td>${item.requiresSupervisorApproval ? '<span style="color: #dc3545;">Required</span>' : '<span style="color: #28a745;">Not Required</span>'}</td>
+                        <td>${item.location || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-edit" onclick="editItem('${item._id}')">Edit</button>
+                            <button class="btn btn-delete" onclick="deleteItem('${item._id}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        // Load borrowings wrapper (default all)
+        async function loadBorrowings() {
+            borrowFilter = 'all';
+            const container = document.getElementById('borrowingsContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Loading all borrowings...</div>';
+            await loadBorrowingsData(borrowFilter, borrowSearchQuery);
+        }
+
+        
+        // Display borrowings table
+        function displayBorrowings(borrowings) {
+            const container = document.getElementById('borrowingsContainer');
+            
+            if (borrowings.length === 0) {
+                container.innerHTML = '<div class="empty-state">No borrowings yet</div>';
+                return;
+            }
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Borrow Date</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Supervisor Approved</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            borrowings.forEach(borrowing => {
+                const itemId = borrowing.itemId?._id || borrowing.itemId;
+                const itemName = borrowing.itemId?.name || 'Unknown';
+                const borrowDate = new Date(borrowing.borrowDate).toLocaleDateString();
+                const dueDate = new Date(borrowing.expectedReturnDate).toLocaleDateString();
+                
+                html += `
+                    <tr>
+                        <td>${borrowing.employeeName}</td>
+                        <td>${itemName}</td>
+                        <td>${borrowing.quantity}</td>
+                        <td>${borrowDate}</td>
+                        <td>${dueDate}</td>
+                        <td><span class="status ${borrowing.status}">${borrowing.status}</span></td>
+                        <td>${borrowing.supervisorApproved ? '<span style="color: #28a745;">Approved</span>' : '<span style="color: #ffc107;">Pending</span>'}</td>
+                        <td>
+                            ${!borrowing.supervisorApproved && currentUser.role === 'personnel' ? `<button class="btn btn-success" onclick="approveBorrowing('${borrowing._id}')">Approve</button>` : ''}
+                            ${borrowing.status !== 'returned' ? `<button class="btn btn-primary" onclick="returnBorrowing('${borrowing._id}')">Mark Returned</button>` : ''}
+                            <button class="btn btn-secondary" onclick="editBorrowing('${borrowing._id}')">Edit</button>
+                            <button class="btn btn-primary" style="margin-left:5px;" onclick="downloadBorrowingDocx('${borrowing._id}')">Download DOCX</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        async function returnBorrowing(borrowingId) {
+            const confirmed = confirm('Mark this borrowing as returned?');
+            if (!confirmed) return;
+            try {
+                const response = await fetch(`${API_BASE}/api/borrowing/${borrowingId}/return`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ actualReturnDate: new Date().toISOString(), damageStatus: 'good' })
+                });
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Return failed');
+                }
+                alert('Borrowing marked as returned successfully');
+                await loadBorrowings();
+                await loadOverdue();
+                await loadItems();
+            } catch (err) {
+                alert('Error returning borrowing: ' + err.message);
+            }
+        }
+
+        async function approveBorrowing(borrowingId) {
+            const confirmed = confirm('Approve this borrowing request?');
+            if (!confirmed) return;
+            try {
+                const response = await fetch(`${API_BASE}/api/borrowing/${borrowingId}/approve`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Approval failed');
+                }
+                alert('Borrowing approved successfully');
+                await loadBorrowings();
+            } catch (err) {
+                alert('Error approving borrowing: ' + err.message);
+            }
+        }
+
+        async function editBorrowing(borrowingId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/borrowing/${borrowingId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!response.ok) throw new Error('Borrowing not found');
+                const data = await response.json();
+                const newExpected = prompt('Expected return date (YYYY-MM-DD):', data.expectedReturnDate ? new Date(data.expectedReturnDate).toISOString().split('T')[0] : '');
+                if (newExpected === null) return;
+                const newNotes = prompt('Notes:', data.notes || '');
+
+                const updatePayload = {};
+                if (newExpected) updatePayload.expectedReturnDate = new Date(newExpected).toISOString();
+                if (newNotes !== null) updatePayload.notes = newNotes;
+
+                const patchResp = await fetch(`${API_BASE}/api/borrowing/${borrowingId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(updatePayload)
+                });
+
+                if (!patchResp.ok) {
+                    const errData = await patchResp.json();
+                    throw new Error(errData.error || 'Update failed');
+                }
+
+                alert('Borrowing updated successfully');
+                await loadBorrowings();
+            } catch (err) {
+                alert('Error editing borrowing: ' + err.message);
+            }
+        }
+
+        // Load overdue items
+        async function loadOverdue() {
+            try {
+                const response = await fetch(`${API_BASE}/api/borrowing/overdue`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load overdue items');
+                
+                const overdue = await response.json();
+                displayOverdue(overdue);
+            } catch (err) {
+                document.getElementById('overdueContainer').innerHTML = `
+                    <div class="empty-state">Error loading overdue items: ${err.message}</div>
+                `;
+            }
+        }
+        
+        // Display overdue items
+        function displayOverdue(overdue) {
+            const container = document.getElementById('overdueContainer');
+            
+            if (overdue.length === 0) {
+                container.innerHTML = '<div class="empty-state">No overdue items! 🎉</div>';
+                return;
+            }
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Due Date</th>
+                            <th>Days Overdue</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            overdue.forEach(borrowing => {
+                const itemName = borrowing.itemId?.name || 'Unknown';
+                const dueDate = new Date(borrowing.expectedReturnDate);
+                const today = new Date();
+                const daysOverdue = Math.ceil((today - dueDate) / (1000 * 60 * 60 * 24));
+                
+                html += `
+                    <tr>
+                        <td>${borrowing.employeeName}</td>
+                        <td>${itemName}</td>
+                        <td>${borrowing.quantity}</td>
+                        <td>${dueDate.toLocaleDateString()}</td>
+                        <td><span style="color: #e03a4d; font-weight: bold;">${daysOverdue} days</span></td>
+                        <td>
+                            <button class="btn btn-edit" onclick="markReturned('${borrowing._id}')">Mark Returned</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        // Load payments
+        async function loadPayments() {
+            try {
+                const response = await fetch(`${API_BASE}/api/payments`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load payments');
+                
+                const payments = await response.json();
+                displayPayments(payments);
+            } catch (err) {
+                document.getElementById('paymentsContainer').innerHTML = `
+                    <div class="empty-state">Error loading payments: ${err.message}</div>
+                `;
+            }
+        }
+        
+        // Display payments
+        function displayPayments(payments) {
+            const container = document.getElementById('paymentsContainer');
+            
+            if (payments.length === 0) {
+                container.innerHTML = '<div class="empty-state">No payment records yet</div>';
+                return;
+            }
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Item</th>
+                            <th>Damage Description</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            payments.forEach(payment => {
+                const date = new Date(payment.createdAt).toLocaleDateString();
+                
+                html += `
+                    <tr>
+                        <td>${payment.employeeName}</td>
+                        <td>${payment.itemName}</td>
+                        <td>${payment.damageDescription}</td>
+                        <td>$${payment.amount}</td>
+                        <td>${date}</td>
+                        <td><span class="status ${payment.status}">${payment.status}</span></td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        // Load notifications
+        async function loadNotificationCount() {
+            try {
+                const response = await fetch(`${API_BASE}/api/notifications/count`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to load notification count');
+                const data = await response.json();
+                const badge = document.getElementById('notificationBadge');
+                if (!badge) return;
+                const count = data.unreadCount || 0;
+                badge.textContent = `Notifications (${count})`;
+                badge.classList.toggle('unread', count > 0);
+            } catch (err) {
+                console.warn('Notification count error:', err.message);
+            }
+        }
+
+        async function loadNotifications() {
+            try {
+                const response = await fetch(`${API_BASE}/api/notifications`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load notifications');
+                
+                const notifications = await response.json();
+                displayNotifications(notifications);
+            } catch (err) {
+                document.getElementById('notificationsContainer').innerHTML = `
+                    <div class="empty-state">Error loading notifications: ${err.message}</div>
+                `;
+            }
+        }
+        
+        // Display notifications
+        function displayNotifications(notifications) {
+            const container = document.getElementById('notificationsContainer');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = '<div class="empty-state">No notifications</div>';
+                return;
+            }
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Message</th>
+                            <th>Priority</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            notifications.forEach(notification => {
+                const date = new Date(notification.createdAt).toLocaleDateString();
+                
+                html += `
+                    <tr style="background:${notification.isRead ? 'transparent' : '#ffece6'};">
+                        <td>${notification.type}</td>
+                        <td>${notification.message}</td>
+                        <td>${notification.priority || 'medium'}</td>
+                        <td>${date}</td>
+                        <td>${notification.isRead ? 'Read' : 'Unread'}</td>
+                        <td><button class="btn btn-secondary" style="padding:4px 8px; font-size:0.8rem;" onclick="markNotificationRead('${notification._id}')">Mark Read</button></td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        async function markNotificationRead(notificationId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/notifications/${notificationId}/read`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to mark notification read');
+                await loadNotifications();
+                await loadNotificationCount();
+            } catch (err) {
+                alert('Unable to mark notification read: ' + err.message);
+            }
+        }
+
+        async function loadProfile() {
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (!response.ok) {
+                    const errText = await response.text();
+                    let errMessage = 'Failed to load profile';
+                    try {
+                        const errData = JSON.parse(errText);
+                        errMessage = errData.error || errData.message || errMessage;
+                    } catch (_e) {
+                        errMessage = errText || errMessage;
+                    }
+                    throw new Error(errMessage);
+                }
+                const data = await response.json();
+                const profile = data.user || data;
+                document.getElementById('profileUsername').value = profile.username || '';
+                document.getElementById('profileName').value = profile.name || '';
+                document.getElementById('profileEmail').value = profile.email || '';
+                document.getElementById('profilePassword').value = '';
+                document.getElementById('profileStatus').innerHTML = '';
+            } catch (err) {
+                document.getElementById('profileStatus').innerHTML = `<div class="alert alert-error">${err.message}</div>`;
+            }
+        }
+
+        async function updateProfile() {
+            const username = document.getElementById('profileUsername').value.trim();
+            const name = document.getElementById('profileName').value.trim();
+            const email = document.getElementById('profileEmail').value.trim();
+            const password = document.getElementById('profilePassword').value.trim();
+
+            const payload = { username, name, email };
+            if (password) payload.password = password;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/me`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errText = await response.text();
+                    let errMessage = 'Failed to update profile';
+                    try {
+                        const errData = JSON.parse(errText);
+                        errMessage = errData.error || errData.message || errMessage;
+                    } catch (_e) {
+                        errMessage = errText || errMessage;
+                    }
+                    throw new Error(errMessage);
+                }
+                const data = await response.json();
+                document.getElementById('profileStatus').innerHTML = `<div class="alert alert-success">${data.message || 'Profile updated successfully'}</div>`;
+                localStorage.setItem('user', JSON.stringify(data.user));
+                document.getElementById('userName').textContent = data.user.name || data.user.username;
+            } catch (err) {
+                document.getElementById('profileStatus').innerHTML = `<div class="alert alert-error">${err.message}</div>`;
+            }
+        }
+        
+        // Generate report
+        async function generateReport(type) {
+            const statusDiv = document.getElementById('reportStatus');
+            statusDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #667eea;">Generating report...</div>';
+            
+            try {
+                let endpoint = '';
+                switch(type) {
+                    case 'inventory':
+                        endpoint = '/api/reports/inventory/pdf';
+                        break;
+                    case 'borrowings':
+                        endpoint = '/api/reports/borrowing/pdf';
+                        break;
+                    case 'overdue':
+                        endpoint = '/api/reports/borrowing/pdf?filter=overdue';
+                        break;
+                    case 'payments':
+                        endpoint = '/api/reports/payment/excel';
+                        break;
+                }
+                
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to generate report');
+                
+                // For PDF, open tab and provide download link
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+
+                if (type === 'payments') {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${type}-report.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+
+                    statusDiv.innerHTML = `<div style="text-align: center; padding: 20px; color: #28a745;">Payments report downloaded successfully!</div>`;
+                } else {
+                    window.open(url, '_blank');
+                    statusDiv.innerHTML = `<div style="text-align: center; padding: 20px; color: #28a745;">PDF opened in a new tab. <a href="${url}" download="${type}-report.pdf" style="color:#fff;text-decoration:underline;">Click here to download</a></div>`;
+                    setTimeout(() => { window.URL.revokeObjectURL(url); }, 30000);
+                }
+            } catch (err) {
+                statusDiv.innerHTML = `<div style="text-align: center; padding: 20px; color: #dc3545;">Error generating report: ${err.message}</div>`;
+            }
+        }
+        
+        // Run maintenance
+        async function runMaintenance(type) {
+            const statusDiv = document.getElementById('maintenanceStatus');
+            statusDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #667eea;">Running maintenance...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/borrowing/maintenance/${type}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text || 'Maintenance action failed');
+                }
+
+                const data = await response.json();
+
+                let message = data.message || 'Maintenance task completed successfully.';
+                let extra = '';
+
+                if (data.data && Array.isArray(data.data)) {
+                    extra += '<div style="margin-top: 10px; text-align: left;"><strong>Recent logs:</strong><br>';
+                    data.data.slice(0, 10).forEach(entry => {
+                        const time = entry.createdAt ? new Date(entry.createdAt).toLocaleString() : 'unknown';
+                        extra += `${time} - ${entry.title}: ${entry.message}<br>`;
+                    });
+                    extra += '</div>';
+                }
+
+                statusDiv.innerHTML = `<div style="text-align: left; padding: 20px; color: #28a745;"><div>${message}</div>${extra}</div>`;
+            } catch (err) {
+                statusDiv.innerHTML = `<div style="text-align: center; padding: 20px; color: #dc3545;">Maintenance failed: ${err.message}</div>`;
+            }
+        }
+        function showAddItemForm() {
+            document.getElementById('addItemModal').classList.add('show');
+            document.getElementById('addAlert').innerHTML = '';
+            document.getElementById('addItemForm').reset();
+            updateAddCategoryOptions();
+        }
+        
+        // Navigation functions for dashboard sections
+        const sectionIds = ['items','borrowings','checkBorrower','overdue','payments','reports','profile','notifications','maintenance'];
+
+        function hideAllSections() {
+            sectionIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+        }
+
+        function showDashboard() {
+            hideAllSections();
+            const dashboardPanel = document.getElementById('dashboardPanel');
+            if (dashboardPanel) dashboardPanel.style.display = 'grid';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showSection(sectionId) {
+            hideAllSections();
+            const dashboardPanel = document.getElementById('dashboardPanel');
+            if (dashboardPanel) dashboardPanel.style.display = 'none';
+
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.style.display = 'block';
+                element.style.animation = 'highlight 0.5s ease-in-out';
+                setTimeout(() => element.style.animation = '', 500);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // Ensure section data is loaded each time
+            switch(sectionId) {
+                case 'items': loadItems(); break;
+                case 'borrowings': loadBorrowings(); break;
+                case 'overdue': loadOverdue(); break;
+                case 'payments': loadPayments(); break;
+                case 'reports': loadReports(); break;
+                case 'profile': loadProfile(); break;
+                case 'notifications': loadNotifications(); break;
+                case 'maintenance': runMaintenance('status'); break;
+            }
+        }
+
+        function showItemsSection() { showSection('items'); }
+        function showBorrowingsSection() { showSection('borrowings'); }
+        function showCheckBorrowerForm() { showSection('checkBorrower'); }
+        function showOverdueSection() { showSection('overdue'); }
+        function showPaymentsSection() { showSection('payments'); }
+        function showReportsSection() { showSection('reports'); }
+        function showProfileSection() { showSection('profile'); }
+        function showNotificationsSection() { showSection('notifications'); }
+        function showMaintenanceSection() { showSection('maintenance'); }
+        
+        // Reports loader (placeholder; can be extended to request stats/create reports)
+        function loadReports() {
+            const reportStatus = document.getElementById('reportStatus');
+            if (reportStatus) reportStatus.innerHTML = '<div style="text-align: center; padding: 20px; color: #667eea;">Dashboard refreshed at ' + new Date().toLocaleTimeString() + '</div>';
+        }
+
+        // Download borrowing document for teacher/admin
+        async function downloadBorrowingDocx(borrowingId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/borrowing/${borrowingId}/download-docx`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text || 'Failed to download document');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `Borrowing-${borrowingId}.docx`;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                alert('Error generating document: ' + err.message);
+            }
+        }
+
+        // Borrowings functions
+        // helper used by various borrowing loaders (all / active / returned)
+        async function loadBorrowingsData(filter, filters) {
+            // update state
+            if (filters !== undefined) {
+                borrowFilterState = filters;
+            } else {
+                filters = borrowFilterState;
+            }
+            try {
+                let url = `${API_BASE}/api/borrowing`;
+                if (filters && Object.keys(filters).length) {
+                    // rename item to item (will be parsed server side)
+                    url += buildQueryString(filters);
+                }
+                console.log('Fetching borrowings with URL:', url);
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to load borrowings');
+                let data = await response.json();
+                if (filter === 'active') {
+                    data = data.filter(b => b.status === 'borrowed');
+                } else if (filter === 'returned') {
+                    data = data.filter(b => b.status === 'returned');
+                }
+                displayBorrowings(data);
+            } catch (err) {
+                document.getElementById('borrowingsContainer').innerHTML = `
+                    <div class="empty-state">Error loading borrowings: ${err.message}</div>
+                `;
+            }
+        }
+
+        async function loadBorrowings() {
+            const container = document.getElementById('borrowingsContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Loading all borrowings...</div>';
+            await loadBorrowingsData(borrowFilter);
+        }
+        
+        async function loadActiveBorrowings() {
+            borrowFilter = 'active';
+            const container = document.getElementById('borrowingsContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Loading active borrowings...</div>';
+            // Filter for active borrowings
+            await loadBorrowingsData(borrowFilter);
+        }
+        
+        async function loadReturnedBorrowings() {
+            borrowFilter = 'returned';
+            const container = document.getElementById('borrowingsContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Loading returned items...</div>';
+            // Filter for returned borrowings
+            await loadBorrowingsData(borrowFilter);
+        }
+        
+        async function showBorrowingStats() {
+            const container = document.getElementById('borrowingsContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Loading borrowing statistics...</div>';
+            try {
+                const response = await fetch(`${API_BASE}/api/borrowing/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to load stats');
+                const stats = await response.json();
+
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h3>Borrowing Statistics</h3>
+                        <p>Use check borrower to verify individual borrower records and actions.</p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                            <div style="background: #f0f8ff; padding: 20px; border-radius: 8px;">
+                                <div style="font-size: 2em;">📊</div>
+                                <div style="font-weight: bold; margin-top: 10px;">Total Borrowings</div>
+                                <div style="color: #333;">${stats.totalBorrowings}</div>
+                            </div>
+                            <div style="background: #fff0f5; padding: 20px; border-radius: 8px;">
+                                <div style="font-size: 2em;">🔄</div>
+                                <div style="font-weight: bold; margin-top: 10px;">Active</div>
+                                <div style="color: #333;">${stats.activeBorrowings}</div>
+                            </div>
+                            <div style="background: #f0fff0; padding: 20px; border-radius: 8px;">
+                                <div style="font-size: 2em;">✅</div>
+                                <div style="font-weight: bold; margin-top: 10px;">Returned</div>
+                                <div style="color: #333;">${stats.returnedBorrowings}</div>
+                            </div>
+                            <div style="background: #fff7e6; padding: 20px; border-radius: 8px;">
+                                <div style="font-size: 2em;">⚠️</div>
+                                <div style="font-weight: bold; margin-top: 10px;">Overdue</div>
+                                <div style="color: #333;">${stats.overdueItems}</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 24px; color: #555; font-style: italic;">Tip: For a borrower-specific lookup, use the check borrower tool and enter employee ID or email.</div>
+                    </div>
+                `;
+            } catch (err) {
+                container.innerHTML = `<div style="text-align: center; padding: 20px; color: red;">Error loading stats: ${err.message}</div>`;
+            }
+        }
+
+        async function checkBorrower() {
+            const borrowerId = document.getElementById('checkBorrowerId').value.trim();
+            if (!borrowerId) {
+                alert('Please enter a borrower ID or email');
+                return;
+            }
+
+            const container = document.getElementById('borrowerCheckContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Loading borrower data...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/borrowing?q=${encodeURIComponent(borrowerId)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch borrower data');
+                }
+
+                const borrowings = await response.json();
+
+                if (!borrowings || borrowings.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <h3>No Borrowings Found</h3>
+                            <p>No borrowing records found for "${borrowerId}"</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Group by borrower for clear identity
+                const borrowerGroups = {};
+                borrowings.forEach(borrowing => {
+                    const name = borrowing.employeeName || 'Unknown';
+                    const id = borrowing.employeeId || 'Unknown';
+                    const key = `${name}|${id}`;
+                    if (!borrowerGroups[key]) {
+                        borrowerGroups[key] = { name, id, borrows: [] };
+                    }
+                    borrowerGroups[key].borrows.push(borrowing);
+                });
+
+                let html = '<h3>Borrower Check Results</h3>';
+
+                for (const group of Object.values(borrowerGroups)) {
+                    html += `
+                        <div style="border: 1px solid #ddd; margin-bottom: 20px; padding: 15px; border-radius: 8px;">
+                            <h4>${group.name} (${group.id})</h4>
+                            <p style="margin: 0 0 10px; color: #666;">Found ${group.borrows.length} borrowing record(s)</p>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #f7f7f7;">
+                                        <th style="padding: 8px; text-align: left;">Item</th>
+                                        <th style="padding: 8px; text-align: center;">Qty</th>
+                                        <th style="padding: 8px; text-align: center;">Borrow Date</th>
+                                        <th style="padding: 8px; text-align: center;">Expected Return</th>
+                                        <th style="padding: 8px; text-align: center;">Status</th>
+                                        <th style="padding: 8px; text-align: center;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+
+                    group.borrows.forEach(borrowing => {
+                        const itemName = borrowing.itemId?.name || 'Unknown';
+                        const borrowDate = borrowing.borrowDate ? new Date(borrowing.borrowDate).toLocaleDateString() : 'N/A';
+                        const expectedReturn = borrowing.expectedReturnDate ? new Date(borrowing.expectedReturnDate).toLocaleDateString() : 'N/A';
+                        const status = borrowing.status || 'N/A';
+                        const actions = (status === 'borrowed' || status === 'overdue')
+                            ? `<button class="btn btn-edit" onclick="markItemChecked('${borrowing._id}')">Mark Checked</button>`
+                            : 'N/A';
+
+                        html += `
+                                    <tr>
+                                        <td style="padding: 8px;">${itemName}</td>
+                                        <td style="padding: 8px; text-align: center;">${borrowing.quantity || 0}</td>
+                                        <td style="padding: 8px; text-align: center;">${borrowDate}</td>
+                                        <td style="padding: 8px; text-align: center;">${expectedReturn}</td>
+                                        <td style="padding: 8px; text-align: center;">${status}</td>
+                                        <td style="padding: 8px; text-align: center;">${actions}</td>
+                                    </tr>`;
+                    });
+
+                    html += `
+                                </tbody>
+                            </table>
+                        </div>`;
+                }
+
+                container.innerHTML = html;
+            } catch (err) {
+                container.innerHTML = `<div style="text-align: center; padding: 40px; color: red;">Error: ${err.message}</div>`;
+            }
+        }
+
+        async function markItemChecked(borrowingId) {
+            if (!confirm('Mark this item as checked/returned?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/borrowing/${borrowingId}/return`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        actualReturnDate: new Date().toISOString(),
+                        damageStatus: 'good'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to mark item as checked');
+                }
+
+                alert('Item marked as checked and returned!');
+                checkBorrower(); // Refresh the list
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+        
+        // Overdue functions
+        async function loadOverdueItems() {
+            const container = document.getElementById('overdueContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Loading overdue items...</div>';
+            await loadOverdue();
+        }
+
+        function renderDueTable(title, description, data) {
+            const container = document.getElementById('overdueContainer');
+            if (!data || data.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <h3>${title}</h3>
+                        <p>${description}</p>
+                        <div style="background: #f0f8ff; color: #0c5460; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                            <div style="font-size: 3em;">✅</div>
+                            <div style="font-weight: bold; margin-top: 10px;">No records found</div>
+                            <div style="margin-top: 10px;">All items are on schedule.</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            let rows = '';
+            data.forEach(borrowing => {
+                const itemName = borrowing.itemId?.name || 'Unknown';
+                const dueDate = new Date(borrowing.expectedReturnDate);
+                const now = new Date();
+                const daysDiff = Math.floor((dueDate - now) / (1000 * 60 * 60 * 24));
+
+                rows += `
+                    <tr>
+                        <td>${borrowing.employeeName}</td>
+                        <td>${itemName}</td>
+                        <td>${borrowing.quantity}</td>
+                        <td>${dueDate.toLocaleDateString()}</td>
+                        <td>${daysDiff}</td>
+                    </tr>
+                `;
+            });
+
+            container.innerHTML = `
+                <h3>${title}</h3>
+                <p>${description}</p>
+                <div class="items-list">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Item</th>
+                                <th>Quantity</th>
+                                <th>Due Date</th>
+                                <th>Days Difference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        async function loadDueToday() {
+            const container = document.getElementById('overdueContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Loading due today items...</div>';
+            try {
+                const response = await fetch(`${API_BASE}/api/borrowing`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!response.ok) throw new Error('Failed to load borrowings');
+                const data = await response.json();
+
+                const todayStart = new Date();
+                todayStart.setHours(0, 0, 0, 0);
+                const todayEnd = new Date(todayStart);
+                todayEnd.setDate(todayEnd.getDate() + 1);
+
+                const dueToday = data.filter(b => {
+                    if (!b.expectedReturnDate) return false;
+                    const due = new Date(b.expectedReturnDate);
+                    return due >= todayStart && due < todayEnd && b.status !== 'returned';
+                });
+
+                renderDueTable('Items Due Today', 'Items that need to be returned today', dueToday);
+            } catch (err) {
+                container.innerHTML = `<div class="empty-state">Error loading due today: ${err.message}</div>`;
+            }
+        }
+
+        async function loadDueSoon() {
+            const container = document.getElementById('overdueContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Loading due soon items...</div>';
+            try {
+                const response = await fetch(`${API_BASE}/api/borrowing`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (!response.ok) throw new Error('Failed to load borrowings');
+                const data = await response.json();
+
+                const now = new Date();
+                now.setHours(0, 0, 0, 0);
+                const soonEnd = new Date(now);
+                soonEnd.setDate(soonEnd.getDate() + 4);
+
+                const dueSoon = data.filter(b => {
+                    if (!b.expectedReturnDate) return false;
+                    const due = new Date(b.expectedReturnDate);
+                    return due > now && due < soonEnd && b.status !== 'returned';
+                });
+
+                renderDueTable('Items Due Soon', 'Items due within the next 3 days', dueSoon);
+            } catch (err) {
+                container.innerHTML = `<div class="empty-state">Error loading due soon: ${err.message}</div>`;
+            }
+        }
+
+        
+        function loadDueSoon() {
+            const container = document.getElementById('overdueContainer');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <h3>Items Due Soon</h3>
+                    <p>Items due within the next 3 days</p>
+                    <div style="background: #d1ecf1; color: #0c5460; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                        <div style="font-size: 3em;">⏰</div>
+                        <div style="font-weight: bold; margin-top: 10px;">No items due soon</div>
+                        <div style="margin-top: 10px;">All items are on schedule! ✅</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function sendOverdueReminders() {
+            const container = document.getElementById('overdueContainer');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <h3>Send Overdue Reminders</h3>
+                    <div style="background: #d4edda; color: #155724; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                        <div style="font-size: 3em;">📧</div>
+                        <div style="font-weight: bold; margin-top: 10px;">Reminders Sent Successfully!</div>
+                        <div style="margin-top: 10px;">Email notifications have been sent to all borrowers with overdue items.</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Payments functions
+        async function loadAllPayments() {
+            const container = document.getElementById('paymentsContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Loading all payments...</div>';
+            await loadPaymentsData();
+        }
+        
+        function loadPendingPayments() {
+            const container = document.getElementById('paymentsContainer');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <h3>Pending Payments</h3>
+                    <p>Damage fees that haven't been paid yet</p>
+                    <div style="background: #f8d7da; color: #721c24; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                        <div style="font-size: 3em;">⏳</div>
+                        <div style="font-weight: bold; margin-top: 10px;">No pending payments</div>
+                        <div style="margin-top: 10px;">All damage fees have been collected! 💰</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function loadPaidPayments() {
+            const container = document.getElementById('paymentsContainer');
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <h3>Completed Payments</h3>
+                    <p>Successfully collected damage fees</p>
+                    <div style="background: #d4edda; color: #155724; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                        <div style="font-size: 3em;">✅</div>
+                        <div style="font-weight: bold; margin-top: 10px;">Payment records loaded</div>
+                        <div style="margin-top: 10px;">View completed payment transactions below.</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Notifications functions
+        async function loadAllNotifications() {
+            const container = document.getElementById('notificationsContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Loading all notifications...</div>';
+            await loadNotifications();
+        }
+        
+        async function loadUnreadNotifications() {
+            const container = document.getElementById('notificationsContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Loading unread notifications...</div>';
+            try {
+                const response = await fetch(`${API_BASE}/api/notifications?isRead=false`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to load unread notifications');
+
+                const notifications = await response.json();
+                if (notifications.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <h3>Unread Notifications</h3>
+                            <p>New system messages and alerts</p>
+                            <div style="background: #d1ecf1; color: #0c5460; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                                <div style="font-size: 3em;">📬</div>
+                                <div style="font-weight: bold; margin-top: 10px;">No unread notifications</div>
+                                <div style="margin-top: 10px;">You're all caught up! 🎉</div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                displayNotifications(notifications);
+            } catch (err) {
+                container.innerHTML = `<div class="empty-state">Error: ${err.message}</div>`;
+            }
+        }
+
+        async function loadSystemAlerts() {
+            const container = document.getElementById('notificationsContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Loading system alerts...</div>';
+            try {
+                const response = await fetch(`${API_BASE}/api/notifications?type=alert`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to load system alerts');
+
+                const notifications = await response.json();
+                if (notifications.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <h3>System Alerts</h3>
+                            <p>No active alerts</p>
+                            <div style="background: #fff3cd; color: #856404; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                                <div style="font-size: 3em;">🚨</div>
+                                <div style="font-weight: bold; margin-top: 10px;">All clear</div>
+                                <div style="margin-top: 10px;">No alert notifications found.</div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                displayNotifications(notifications);
+            } catch (err) {
+                container.innerHTML = `<div class="empty-state">Error: ${err.message}</div>`;
+            }
+        }
+
+        async function emailUnreadNotifications() {
+            const container = document.getElementById('notificationsContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Emailing unread notifications...</div>';
+            try {
+                const response = await fetch(`${API_BASE}/api/notifications/email-unread`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to email unread notifications');
+                const data = await response.json();
+                container.innerHTML = `<div style="padding: 20px; background:#d4edda; border:1px solid #c3e6cb; color:#155724; border-radius:8px;">Sent ${data.sentEmails || 0} emails for ${data.count || 0} unread notifications.</div>`;
+                loadUnreadNotifications();
+            } catch (err) {
+                container.innerHTML = `<div style="padding: 20px; background:#f8d7da; border:1px solid #f5c6cb; color:#721c24; border-radius:8px;">Error: ${err.message}</div>`;
+            }
+        }
+
+        async function emailAlertNotifications() {
+            const container = document.getElementById('notificationsContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Emailing alert notifications...</div>';
+            try {
+                const response = await fetch(`${API_BASE}/api/notifications/email-alerts`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to email alert notifications');
+                const data = await response.json();
+                container.innerHTML = `<div style="padding: 20px; background:#d4edda; border:1px solid #c3e6cb; color:#155724; border-radius:8px;">Sent ${data.sentEmails || 0} emails for ${data.count || 0} alert notifications.</div>`;
+                loadSystemAlerts();
+            } catch (err) {
+                container.innerHTML = `<div style="padding: 20px; background:#f8d7da; border:1px solid #f5c6cb; color:#721c24; border-radius:8px;">Error: ${err.message}</div>`;
+            }
+        }
+
+        async function sendNewNotification(event) {
+            event.preventDefault();
+
+            const type = document.getElementById('newNotificationType').value;
+            const target = document.getElementById('newNotificationTarget').value;
+            const employeeId = document.getElementById('newNotificationEmployeeId')?.value.trim();
+            const title = document.getElementById('newNotificationTitle').value.trim();
+            const message = document.getElementById('newNotificationMessage').value.trim();
+
+            if (!title || !message) {
+                alert('Title and message are required');
+                return;
+            }
+
+            const container = document.getElementById('notificationsContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Sending notification...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/notifications`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        type,
+                        title,
+                        message,
+                        priority: 'medium',
+                        target,
+                        employeeId
+                    })
+                });
+
+                if (!response.ok) {
+                    const errText = await response.text();
+                    let errMessage = 'Failed to send notification';
+                    try {
+                        errMessage = JSON.parse(errText).error || errMessage;
+                    } catch (_) {
+                        errMessage = errText || errMessage;
+                    }
+                    throw new Error(errMessage);
+                }
+
+                const data = await response.json();
+                container.innerHTML = `<div style="padding: 20px; background:#d4edda; border:1px solid #c3e6cb; color:#155724; border-radius:8px;">Notification saved and queued. Emails sent: ${data.sentEmailCount || 0}</div>`;
+                setTimeout(() => loadAllNotifications(), 1200);
+            } catch (err) {
+                container.innerHTML = `<div style="padding: 20px; background:#f8d7da; border:1px solid #f5c6cb; color:#721c24; border-radius:8px;">${err.message}</div>`;
+            }
+        }
+        
+        // Category Type Mapping
+        const categoryTypes = {
+            'Electronics': ['Laptop', 'Desktop Computer', 'Monitor', 'Printer', 'Scanner', 'Router', 'Speaker', 'Projector'],
+            'Tools': ['Power Drill', 'Hand Saw', 'Wrench Set', 'Screwdriver Set', 'Measuring Tape', 'Level', 'Hammer'],
+            'Furniture': ['Desk', 'Chair', 'Bookshelf', 'Filing Cabinet', 'Table', 'Cabinet'],
+            'Office Supplies': ['Desk Lamp', 'Stapler', 'Pen Holder', 'Document Organizer', 'Clipboard'],
+            'Laboratory': ['Microscope', 'Bunsen Burner', 'Test Tube Set', 'Beaker Set', 'Pipette'],
+            'Sports Equipment': ['Basketball', 'Tennis Racket', 'Yoga Mat', 'Dumbbell Set', 'Resistance Bands'],
+            'Other': ['Miscellaneous', 'General Item', 'Other']
+        };
+        
+        // Load categories on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCategoryOptions();
+        });
+        
+        // Update category types based on main category selection
+        function updateCategoryOptions() {
+            const mainCategory = document.getElementById('editCategoryMain').value;
+            const typeSelect = document.getElementById('editCategoryType');
+            
+            typeSelect.innerHTML = '<option value="">Select Type</option>';
+            
+            if (mainCategory && categoryTypes[mainCategory]) {
+                categoryTypes[mainCategory].forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = type;
+                    typeSelect.appendChild(option);
+                });
+            }
+        }
+        
+        // Open edit modal
+        async function editItem(id) {
+            try {
+                const response = await fetch(`${API_BASE}/api/items/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load item');
+                
+                const item = await response.json();
+                
+                // Populate form fields
+                document.getElementById('editItemName').value = item.name;
+                document.getElementById('editItemDescription').value = item.description || '';
+                
+                // Handle both old and new category formats
+                if (typeof item.category === 'object') {
+                    document.getElementById('editCategoryMain').value = item.category.main || '';
+                    updateCategoryOptions();
+                    document.getElementById('editCategoryType').value = item.category.type || '';
+                    document.getElementById('editBrandModel').value = item.category.brandModel || '';
+                } else {
+                    // For backwards compatibility with old string format
+                    document.getElementById('editCategoryMain').value = item.category;
+                    updateCategoryOptions();
+                }
+                
+                document.getElementById('editQuantity').value = item.quantity;
+                document.getElementById('editTotalQuantity').value = item.totalQuantity;
+                document.getElementById('editCondition').value = item.condition;
+                document.getElementById('editStatus').value = item.status;
+                document.getElementById('editSerialNumber').value = item.serialNumber || '';
+                document.getElementById('editLocation').value = item.location || '';
+                document.getElementById('editPurchasePrice').value = item.purchasePrice || '';
+                
+                if (item.purchaseDate) {
+                    const date = new Date(item.purchaseDate);
+                    const dateString = date.toISOString().split('T')[0];
+                    document.getElementById('editPurchaseDate').value = dateString;
+                }
+
+                document.getElementById('editRequiresSupervisorApproval').checked = item.requiresSupervisorApproval || false;
+                
+                // Store the item ID for submission
+                document.getElementById('editItemForm').dataset.itemId = id;
+                
+                // Show modal
+                document.getElementById('editItemModal').classList.add('show');
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            }
+        }
+        
+        // Close edit modal
+        function closeEditModal() {
+            document.getElementById('editItemModal').classList.remove('show');
+            document.getElementById('editAlert').innerHTML = '';
+            document.getElementById('editItemForm').reset();
+        }
+        
+        // Update category types for add modal
+        function updateAddCategoryOptions() {
+            const mainCategory = document.getElementById('addCategoryMain').value;
+            const typeSelect = document.getElementById('addCategoryType');
+            
+            typeSelect.innerHTML = '<option value="">Select Type</option>';
+            
+            if (mainCategory && categoryTypes[mainCategory]) {
+                categoryTypes[mainCategory].forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = type;
+                    typeSelect.appendChild(option);
+                });
+            }
+        }
+        
+        // Close add modal
+        function closeAddModal() {
+            document.getElementById('addItemModal').classList.remove('show');
+            document.getElementById('addAlert').innerHTML = '';
+            document.getElementById('addItemForm').reset();
+        }
+        
+        // Handle form submission
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('editItemForm');
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const itemId = form.dataset.itemId;
+                    const alertDiv = document.getElementById('editAlert');
+                    
+                    try {
+                        const formData = new FormData(form);
+                        
+                        const itemData = {
+                            name: formData.get('name'),
+                            description: formData.get('description'),
+                            category: {
+                                main: formData.get('categoryMain'),
+                                type: formData.get('categoryType'),
+                                brandModel: formData.get('brandModel')
+                            },
+                            quantity: parseInt(formData.get('quantity')),
+                            totalQuantity: parseInt(formData.get('totalQuantity')),
+                            condition: formData.get('condition'),
+                            status: formData.get('status'),
+                            serialNumber: formData.get('serialNumber'),
+                            location: formData.get('location'),
+                            purchasePrice: parseFloat(formData.get('purchasePrice')) || 0,
+                            purchaseDate: formData.get('purchaseDate') || null,
+                            requiresSupervisorApproval: formData.get('requiresSupervisorApproval') === 'on'
+                        };
+                        
+                        const response = await fetch(`${API_BASE}/api/items/${itemId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `Bearer ${authToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(itemData)
+                        });
+                        
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.message || 'Failed to update item');
+                        }
+                        
+                        alertDiv.innerHTML = '<div class="alert alert-success">✓ Item updated successfully!</div>';
+                        
+                        setTimeout(() => {
+                            closeEditModal();
+                            loadItems();
+                        }, 1500);
+                    } catch (err) {
+                        alertDiv.innerHTML = `<div class="alert alert-error">✗ Error: ${err.message}</div>`;
+                    }
+                });
+            }
+            
+            // Handle add item form submission
+            const addForm = document.getElementById('addItemForm');
+            if (addForm) {
+                addForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const alertDiv = document.getElementById('addAlert');
+                    
+                    try {
+                        const formData = new FormData(addForm);
+                        
+                        const itemData = {
+                            name: formData.get('name'),
+                            description: formData.get('description'),
+                            category: {
+                                main: formData.get('categoryMain'),
+                                type: formData.get('categoryType'),
+                                brandModel: formData.get('brandModel')
+                            },
+                            quantity: parseInt(formData.get('quantity')),
+                            totalQuantity: parseInt(formData.get('totalQuantity')),
+                            condition: formData.get('condition'),
+                            status: formData.get('status'),
+                            serialNumber: formData.get('serialNumber'),
+                            location: formData.get('location'),
+                            purchasePrice: parseFloat(formData.get('purchasePrice')) || 0,
+                            purchaseDate: formData.get('purchaseDate') || null,
+                            requiresSupervisorApproval: formData.get('requiresSupervisorApproval') === 'on'
+                        };
+                        
+                        const response = await fetch(`${API_BASE}/api/items`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${authToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(itemData)
+                        });
+                        
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.message || 'Failed to add item');
+                        }
+                        
+                        alertDiv.innerHTML = '<div class="alert alert-success">✓ Item added successfully!</div>';
+                        
+                        setTimeout(() => {
+                            closeAddModal();
+                            loadItems();
+                        }, 1500);
+                    } catch (err) {
+                        alertDiv.innerHTML = `<div class="alert alert-error">✗ Error: ${err.message}</div>`;
+                    }
+                });
+            }
+        });
+        
+        function deleteItem(id) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                alert('Delete Item coming soon!');
+            }
+        }
+        
+        function markReturned(id) {
+            if (confirm('Mark this item as returned?')) {
+                alert('Mark returned coming soon!');
+            }
+        }
+        
+        function showAddPaymentForm() {
+            const container = document.getElementById('paymentsContainer');
+            container.innerHTML = `
+                <div style="padding: 20px;">
+                    <h3>Add New Payment Record</h3>
+                    <form style="max-width: 600px; margin: 0 auto;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Borrower Name</label>
+                                <input type="text" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Enter borrower name">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Item Name</label>
+                                <input type="text" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Enter item name">
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Damage Description</label>
+                            <textarea style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-height: 80px;" placeholder="Describe the damage..."></textarea>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Repair Cost ($)</label>
+                                <input type="number" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Status</label>
+                                <select style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                    <option value="pending">Pending Payment</option>
+                                    <option value="paid">Paid</option>
+                                    <option value="waived">Waived</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button type="button" onclick="loadAllPayments()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                            <button type="submit" style="padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Save Payment</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        }
+        
+        function showAddNotificationForm() {
+            const container = document.getElementById('notificationsContainer');
+            container.innerHTML = `
+                <div style="padding: 20px;">
+                    <h3>Send New Notification</h3>
+                    <form id="newNotificationForm" onsubmit="sendNewNotification(event)" style="max-width: 600px; margin: 0 auto;">
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Notification Type</label>
+                            <select id="newNotificationType" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="item-returned">Item Returned</option>
+                                <option value="item-overdue">Item Overdue</option>
+                                <option value="damage-reported">Damage Reported</option>
+                                <option value="payment-pending">Payment Pending</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Recipient</label>
+                            <select id="newNotificationTarget" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <option value="all">All Users</option>
+                                <option value="employees">All Employees</option>
+                                <option value="admins">Administrators</option>
+                                <option value="specific">Specific Employee ID</option>
+                            </select>
+                        </div>
+                        <div id="specificEmployeeRow" style="margin-bottom: 20px; display:none;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Employee ID</label>
+                            <input id="newNotificationEmployeeId" type="text" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Enter employee id">
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Title</label>
+                            <input id="newNotificationTitle" type="text" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Notification title">
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Message</label>
+                            <textarea id="newNotificationMessage" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-height: 100px;" placeholder="Enter your message..."></textarea>
+                        </div>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button type="button" onclick="loadAllNotifications()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                            <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Send Notification</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            const targetSelect = document.getElementById('newNotificationTarget');
+            targetSelect.addEventListener('change', () => {
+                const specific = document.getElementById('specificEmployeeRow');
+                specific.style.display = targetSelect.value === 'specific' ? 'block' : 'none';
+            });
+        }
+        
+        // QR Code Modal Functions
+        function showQRModal(itemId, itemName, qrCode) {
+            document.getElementById('qrItemName').textContent = `📦 ${itemName}`;
+            document.getElementById('qrItemDetail').textContent = `Students can scan this QR code with their phones to borrow this item`;
+            document.getElementById('qrImage').src = qrCode;
+            const modal = document.getElementById('qrModal');
+            modal.style.display = 'flex';
+        }
+        
+        function closeQRModal() {
+            document.getElementById('qrModal').style.display = 'none';
+        }
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('qrModal');
+            if (event.target === modal) {
+                closeQRModal();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrow Item - Inventory System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .borrow-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+        
+        .item-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .item-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .item-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .message {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
+        }
+        
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-cancel {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-cancel:hover {
+            background: #d0d0d0;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="borrow-container">
+        <h1>📋 Borrow Item</h1>
+        <p class="subtitle">Complete your borrowing details</p>
+        
+        <div class="message" id="message"></div>
+        
+        <div class="item-info" id="itemInfo" style="display: none;">
+            <h3>Selected Item</h3>
+            <div class="item-detail">
+                <span id="itemName"></span>
+            </div>
+            <div class="item-detail">
+                <span>Serial:</span>
+                <span id="itemSerial"></span>
+            </div>
+            <div class="item-detail">
+                <span>Available:</span>
+                <span id="itemQuantity"></span>
+            </div>
+        </div>
+
+        <div id="qrFallback" style="display:none; margin-bottom:20px;">
+            <h3 style="margin-bottom:8px;">Can't load item? Paste QR data</h3>
+            <textarea id="qrDataInput" placeholder='Paste QR JSON here (e.g. {"itemId":"...","serialNumber":"..."})' style="width:100%; min-height:80px; padding:8px; border-radius:6px; border:1px solid #ddd;"></textarea>
+            <div style="margin-top:8px; display:flex; gap:8px;">
+                <button id="qrScanBtn" class="btn btn-submit" style="max-width:160px;">Use QR Data</button>
+                <button id="qrClearBtn" type="button" class="btn btn-cancel" style="max-width:120px;">Clear</button>
+            </div>
+        </div>
+        
+        <form id="borrowForm">
+            <div class="form-group">
+                <label for="employeeName">Your Full Name *</label>
+                <input type="text" id="employeeName" name="employeeName" required placeholder="Enter your full name">
+            </div>
+            
+            <div class="form-group">
+                <label for="employeeId">Employee ID *</label>
+                <input type="text" id="employeeId" name="employeeId" required placeholder="Enter your employee ID">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">LaSalle Official Email *</label>
+                <input type="email" id="email" name="email" required placeholder="Enter your @lasalle.edu email">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="department">Department *</label>
+                    <input type="text" id="department" name="department" required placeholder="Enter your department">
+                </div>
+                
+                <div class="form-group">
+                    <label for="quantity">Quantity *</label>
+                    <input type="number" id="quantity" name="quantity" required min="1" placeholder="Quantity to borrow">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="expectedReturnDate">Expected Return Date *</label>
+                <input type="date" id="expectedReturnDate" name="expectedReturnDate" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="purpose">Purpose of Borrowing</label>
+                <textarea id="purpose" name="purpose" placeholder="Describe why you need this item"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="notes">Additional Notes</label>
+                <textarea id="notes" name="notes" placeholder="Any additional information"></textarea>
+            </div>
+            
+            <div class="loading" id="loading">
+                <p>Processing your borrowing request...</p>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-submit" id="submitBtn">✓ Borrow Item</button>
+                <button type="button" class="btn btn-cancel" id="cancelBtn">Cancel</button>
+            </div>
+        </form>
+        
+        <div id="receiptActions" style="margin-top:16px; display:none; text-align:center;"></div>
+
+        <div class="back-link">
+            <a href="/inventory">← Back to Home</a>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = window.location.origin;
+        let scannedItem = null;
+        const socket = io();
+
+        // When other clients/admin update items, refresh displayed item data
+        socket.on('item-borrowed', (payload) => {
+            // If the event affects the currently displayed item, refetch it
+            if (!scannedItem) return;
+            if (payload.item && payload.item._id === scannedItem._id) fetchItemData(scannedItem._id);
+        });
+
+        socket.on('item-returned', (payload) => {
+            if (!scannedItem) return;
+            if (payload.item && payload.item._id === scannedItem._id) fetchItemData(scannedItem._id);
+        });
+        
+        // Get itemId from URL parameter
+        function getItemIdFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('itemId');
+        }
+        
+        // Load item data
+        function loadScannedItem() {
+            const itemId = getItemIdFromURL();
+            
+            if (!itemId) {
+                showMessage('No item scanned. Please scan a QR code.', 'error');
+                setTimeout(() => {
+                    window.location.href = '/inventory';
+                }, 2000);
+                return;
+            }
+            
+            fetchItemData(itemId);
+        }
+        
+        async function fetchItemData(itemId) {
+                    try {
+                        // use public QR route to fetch item details without auth
+                        const response = await fetch(`${API_BASE}/api/qr/item/${itemId}`);
+
+                        if (!response.ok) {
+                    showMessage('Item not found', 'error');
+                    showQRFallback();
+                    return;
+                        }
+
+                        scannedItem = await response.json();
+                        displayItem();
+                    } catch (err) {
+                        showMessage('Error loading item: ' + err.message, 'error');
+                        showQRFallback();
+                    }
+                }
+
+                function showQRFallback() {
+                    const fallback = document.getElementById('qrFallback');
+                    if (fallback) fallback.style.display = 'block';
+                }
+
+                // Handle QR paste/scan action
+                document.addEventListener('click', (e) => {
+                    if (e.target && e.target.id === 'qrScanBtn') {
+                        const raw = document.getElementById('qrDataInput').value.trim();
+                        if (!raw) return showMessage('Please paste QR data', 'error');
+                        processQRData(raw);
+                    }
+
+                    if (e.target && e.target.id === 'qrClearBtn') {
+                        document.getElementById('qrDataInput').value = '';
+                    }
+                });
+
+                async function processQRData(raw) {
+                    try {
+                        // send to server scan endpoint which expects { qrData }
+                        const res = await fetch(`${API_BASE}/api/qr/scan`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ qrData: raw })
+                        });
+
+                        const d = await res.json();
+                        if (!res.ok) {
+                            return showMessage(d.error || 'QR scan failed', 'error');
+                        }
+
+                        if (d && d.item) {
+                            scannedItem = d.item;
+                            displayItem();
+                            document.getElementById('qrFallback').style.display = 'none';
+                            showMessage('Item loaded from QR', 'success');
+                        } else {
+                            showMessage('Item not found from QR', 'error');
+                        }
+                    } catch (err) {
+                        showMessage('Error processing QR: ' + err.message, 'error');
+                    }
+                }
+        
+        function displayItem() {
+            if (!scannedItem || !scannedItem._id) {
+                showMessage('Invalid item data', 'error');
+                return;
+            }
+            
+            document.getElementById('itemName').textContent = scannedItem.name || 'Unknown Item';
+            document.getElementById('itemSerial').textContent = scannedItem.serialNumber || 'N/A';
+            document.getElementById('itemQuantity').textContent = scannedItem.quantity || 0;
+            document.getElementById('itemInfo').style.display = 'block';
+            
+            // Set max quantity
+            const quantityInput = document.getElementById('quantity');
+            quantityInput.max = scannedItem.quantity || 1;
+        }
+        
+        // Allow any return date (including past dates) so overdue survey entries can be created
+        // (if you want to enforce future dates, remove this assignment)
+        document.getElementById('expectedReturnDate').removeAttribute('min');
+        
+        // Form submission
+        document.getElementById('borrowForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!scannedItem) {
+                showMessage('No item selected', 'error');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            
+            submitBtn.disabled = true;
+            loading.style.display = 'block';
+            
+            const borrowingData = {
+                itemId: scannedItem._id,
+                employeeName: document.getElementById('employeeName').value,
+                employeeId: document.getElementById('employeeId').value,
+                email: document.getElementById('email').value,
+                department: document.getElementById('department').value,
+                quantity: parseInt(document.getElementById('quantity').value),
+                expectedReturnDate: document.getElementById('expectedReturnDate').value,
+                purpose: document.getElementById('purpose').value,
+                notes: document.getElementById('notes').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/borrowing`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(borrowingData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('✓ Item borrowed successfully!', 'success');
+                    document.getElementById('borrowForm').reset();
+
+                    // Show download receipt action
+                    const receiptActions = document.getElementById('receiptActions');
+                    receiptActions.innerHTML = '';
+                    const btn = document.createElement('button');
+                    btn.className = 'btn btn-submit';
+                    btn.textContent = 'Download Receipt';
+                    btn.style.maxWidth = '220px';
+                    btn.addEventListener('click', () => {
+                        if (data && data._id) downloadReceipt(data._id);
+                    });
+                    receiptActions.appendChild(btn);
+                    receiptActions.style.display = 'block';
+
+                    // Auto-hide the actions after 30s and then redirect
+                    setTimeout(() => {
+                        receiptActions.style.display = 'none';
+                        window.location.href = '/inventory';
+                    }, 30000);
+                } else {
+                    showMessage(data.error || 'Failed to borrow item', 'error');
+                }
+            } catch (err) {
+                showMessage('Error: ' + err.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            window.location.href = '/inventory';
+        });
+        
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+        }
+
+        // Download DOCX receipt for a borrowing
+        async function downloadReceipt(borrowingId) {
+            const url = `${API_BASE}/api/borrowing/${borrowingId}/download-docx`;
+            try {
+                const res = await fetch(url, { method: 'GET' });
+                if (!res.ok) {
+                    showMessage('Failed to download receipt', 'error');
+                    return;
+                }
+                const blob = await res.blob();
+                const filename = `borrowing-${borrowingId}.docx`;
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                showMessage('Receipt downloaded', 'success');
+            } catch (err) {
+                showMessage('Error downloading receipt: ' + err.message, 'error');
+            }
+        }
+        
+        // Initialize on page load
+        loadScannedItem();
+    </script>
+</body>
+</html>

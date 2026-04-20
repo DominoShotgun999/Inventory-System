@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrow Items - Survey Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .items-selection {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .item-checkbox {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .item-checkbox input {
+            width: auto;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+        
+        .item-info {
+            flex: 1;
+        }
+        
+        .item-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            color: #666;
+            font-size: 0.85em;
+        }
+        
+        .item-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+        }
+        
+        .item-details {
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
+        }
+        
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .message {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 12px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Borrow Items Survey</h1>
+        <p class="subtitle">Select the items you want to borrow and fill in your details</p>
+        
+        <div style="text-align: center; margin-bottom: 30px;">
+            <button type="button" onclick="showSurveyQR()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                📱 View Survey QR Code
+            </button>
+        </div>
+        
+        <div class="message" id="message"></div>
+        
+        <!-- Selected Items Details -->
+        <div id="selectedItemsDetails" style="display: none; margin-bottom: 30px;">
+            <h3 style="color: #333; margin-bottom: 15px;">📋 Selected Items Details</h3>
+            <div id="selectedItemsContainer"></div>
+        </div>
+        
+        <form id="borrowForm">
+            <!-- Employee Info -->
+            <div class="form-group">
+                <label for="employeeName">Your Full Name *</label>
+                <input type="text" id="employeeName" name="employeeName" required placeholder="Enter your full name">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="employeeId">Employee ID *</label>
+                    <input type="text" id="employeeId" name="employeeId" required placeholder="Your ID">
+                </div>
+                
+                <div class="form-group">
+                    <label for="department">Department *</label>
+                    <input type="text" id="department" name="department" required placeholder="Your department">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">LaSalle Official Email *</label>
+                <input type="email" id="email" name="email" required placeholder="Enter your @lasalle.edu email">
+            </div>
+            
+            <!-- Item Selection -->
+            <div class="form-group">
+                <label>Select Items to Borrow *</label>
+                <div class="items-selection" id="itemsContainer">
+                    Loading items...
+                </div>
+            </div>
+            
+            <!-- Expected Return Date -->
+            <div class="form-group">
+                <label for="expectedReturnDate">Expected Return Date *</label>
+                <input type="date" id="expectedReturnDate" name="expectedReturnDate" required>
+            </div>
+            
+            <!-- Purpose -->
+            <div class="form-group">
+                <label for="purpose">Purpose of Borrowing</label>
+                <textarea id="purpose" name="purpose" placeholder="Describe why you need these items"></textarea>
+            </div>
+            
+            <!-- Notes -->
+            <div class="form-group">
+                <label for="notes">Additional Notes</label>
+                <textarea id="notes" name="notes" placeholder="Any additional information"></textarea>
+            </div>
+            
+            <div class="loading" id="loading">
+                <p>Submitting your borrowing request...</p>
+            </div>
+            
+            <button type="submit" class="btn-submit" id="submitBtn">✓ Submit Borrowing Request</button>
+        </form>
+        
+        <div class="back-link">
+            <a href="/inventory">← Back to Home</a>
+        </div>
+    </div>
+    
+    <!-- QR Code Modal -->
+    <div id="qrModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 15px; text-align: center; max-width: 500px;">
+            <h2 style="margin-bottom: 20px; color: #333;">📱 Survey QR Code</h2>
+            <p style="margin-bottom: 20px; color: #666;">Scan this code with your phone to access the survey</p>
+            <div id="qrCodeContainer" style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <canvas id="qrCanvas"></canvas>
+            </div>
+            <button onclick="closeQRModal()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 600;">Close</button>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = window.location.origin;
+        let items = [];
+        let borrowings = [];
+        
+        // Set minimum return date to today
+        document.getElementById('expectedReturnDate').min = new Date().toISOString().split('T')[0];
+        
+        // Load all items and borrowings
+        async function loadItems() {
+            try {
+                const [itemsResponse, borrowingsResponse] = await Promise.all([
+                    fetch(`${API_BASE}/api/items/public`),
+                    fetch(`${API_BASE}/api/borrowing/public`)
+                ]);
+                
+                if (!itemsResponse.ok) throw new Error('Failed to load items');
+                if (!borrowingsResponse.ok) throw new Error('Failed to load borrowings');
+                
+                items = await itemsResponse.json();
+                borrowings = await borrowingsResponse.json();
+                displayItems();
+
+                // Update display when borrower ID changes
+                const employeeIdInput = document.getElementById('employeeId');
+                if (employeeIdInput) {
+                    employeeIdInput.addEventListener('input', () => {
+                        updateSelectedItemsDetails();
+                    });
+                }
+            } catch (err) {
+                showMessage('Error loading data: ' + err.message, 'error');
+            }
+        }
+        
+        // Display items as checkboxes with quantity inputs
+        function displayItems() {
+            const container = document.getElementById('itemsContainer');
+            
+            if (items.length === 0) {
+                container.innerHTML = '<p style="color: #999;">No items available</p>';
+                return;
+            }
+            
+            let html = '';
+            items.forEach(item => {
+                html += `
+                    <div class="item-checkbox" style="display: flex; align-items: center; margin: 10px 0; padding: 10px; background: white; border-radius: 5px;">
+                        <input type="checkbox" name="items" value="${item._id}" ${item.quantity > 0 ? '' : 'disabled'} style="margin-right: 12px; cursor: pointer;">
+                        <div class="item-info" style="flex: 1;">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-details">
+                                Category: ${item.category?.main || 'Other'} - ${item.category?.type || 'Miscellaneous'} | Available: ${item.quantity}/${item.totalQuantity}
+                            </div>
+                        </div>
+                        <div class="quantity-input" style="display: none; margin-left: 10px;">
+                            <label style="font-size: 0.8em; color: #666;">Qty:</label>
+                            <input type="number" class="item-quantity" min="1" max="${item.quantity}" value="1" style="width: 60px; padding: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            
+            // Add event listeners to show/hide quantity inputs and update selected items
+            document.querySelectorAll('input[name="items"]').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const quantityDiv = e.target.closest('.item-checkbox').querySelector('.quantity-input');
+                    quantityDiv.style.display = e.target.checked ? 'block' : 'none';
+                    updateSelectedItemsDetails();
+                });
+            });
+            
+            // Add event listeners for quantity changes
+            document.querySelectorAll('.item-quantity').forEach(input => {
+                input.addEventListener('input', updateSelectedItemsDetails);
+            });
+        }
+        
+        // Update selected items details display
+        function updateSelectedItemsDetails() {
+            const selectedItemsContainer = document.getElementById('selectedItemsContainer');
+            const selectedItemsDetails = document.getElementById('selectedItemsDetails');
+            const employeeId = document.getElementById('employeeId').value.trim();
+
+            const selectedItems = [];
+            document.querySelectorAll('input[name="items"]:checked').forEach(checkbox => {
+                const itemId = checkbox.value;
+                const item = items.find(i => i._id === itemId);
+                const quantityInput = checkbox.closest('.item-checkbox').querySelector('.item-quantity');
+                const quantity = parseInt(quantityInput.value) || 1;
+
+                if (item) {
+                    selectedItems.push({ ...item, selectedQuantity: quantity });
+                }
+            });
+
+            // Show warning if borrower already has active borrowings
+            const activeBorrowings = employeeId
+                ? borrowings.filter(b => b.employeeId === employeeId && b.status !== 'returned')
+                : [];
+
+            if (employeeId && activeBorrowings.length > 0) {
+                showMessage('You have active borrowing(s). Return them before borrowing new items.', 'error');
+                document.getElementById('submitBtn').disabled = true;
+            } else {
+                clearMessage();
+                document.getElementById('submitBtn').disabled = false;
+            }
+
+            if (selectedItems.length === 0) {
+                selectedItemsDetails.style.display = 'none';
+                return;
+            }
+
+            selectedItemsDetails.style.display = 'block';
+
+            let html = '';
+            selectedItems.forEach(item => {
+                // Only show borrowings for the current employee ID
+                const itemBorrowings = employeeId
+                    ? borrowings.filter(b => b.itemId._id === item._id && b.employeeId === employeeId && b.status !== 'returned')
+                    : [];
+
+                html += `
+                    <div class="item-info" style="margin-bottom: 15px; background: #f8f9fa; border-left: 4px solid #28a745;">
+                        <h4 style="margin-bottom: 10px; color: #333;">${item.name}</h4>
+                        <div class="item-detail">
+                            <span>Serial Number:</span>
+                            <span>${item.serialNumber || 'N/A'}</span>
+                        </div>
+                        <div class="item-detail">
+                            <span>Category:</span>
+                            <span>${item.category?.main || 'Other'} - ${item.category?.type || 'Miscellaneous'}</span>
+                        </div>
+                        <div class="item-detail">
+                            <span>Available:</span>
+                            <span>${item.quantity}/${item.totalQuantity}</span>
+                        </div>
+                        <div class="item-detail">
+                            <span>Requested Quantity:</span>
+                            <span>${item.selectedQuantity}</span>
+                        </div>
+                        <div class="item-detail">
+                            <span>Condition:</span>
+                            <span>${item.condition || 'Good'}</span>
+                        </div>
+                        <div class="item-detail">
+                            <span>Location:</span>
+                            <span>${item.location || 'N/A'}</span>
+                        </div>`;
+
+                if (itemBorrowings.length > 0) {
+                    html += `
+                        <div style="margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 4px;">
+                            <strong>Your Current Borrowings (this item):</strong>
+                            ${itemBorrowings.map(b => `
+                                <div style="margin-top: 5px; font-size: 0.9em;">
+                                    ${b.employeeName} (${b.employeeId}) - ${b.quantity} units, Due: ${new Date(b.expectedReturnDate).toLocaleDateString()}
+                                </div>
+                            `).join('')}
+                        </div>`;
+                }
+
+                html += `</div>`;
+            });
+
+            selectedItemsContainer.innerHTML = html;
+        }
+        
+        // Handle form submission
+        document.getElementById('borrowForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Prevent borrowing when borrower has active items
+            const employeeId = document.getElementById('employeeId').value.trim();
+            const activeBorrowings = employeeId
+                ? borrowings.filter(b => b.employeeId === employeeId && b.status !== 'returned')
+                : [];
+            if (activeBorrowings.length > 0) {
+                showMessage('You must return your current borrowed items before submitting a new borrowing request.', 'error');
+                submitBtn.disabled = false;
+                loading.style.display = 'none';
+                return;
+            }
+
+            // Get selected items with quantities
+            const selectedItems = [];
+            document.querySelectorAll('input[name="items"]:checked').forEach(checkbox => {
+                const itemId = checkbox.value;
+                const quantityInput = checkbox.closest('.item-checkbox').querySelector('.item-quantity');
+                const quantity = parseInt(quantityInput.value) || 1;
+                selectedItems.push({ itemId, quantity });
+            });
+            
+            if (selectedItems.length === 0) {
+                showMessage('Please select at least one item', 'error');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            
+            submitBtn.disabled = true;
+            loading.style.display = 'block';
+            
+            try {
+                // Submit each item as a separate borrowing record
+                const promises = selectedItems.map(({ itemId, quantity }) => {
+                    const borrowingData = {
+                        itemId,
+                        employeeName: document.getElementById('employeeName').value,
+                        employeeId: document.getElementById('employeeId').value,
+                        email: document.getElementById('email').value,
+                        department: document.getElementById('department').value,
+                        quantity: quantity,
+                        expectedReturnDate: document.getElementById('expectedReturnDate').value,
+                        purpose: document.getElementById('purpose').value,
+                        notes: document.getElementById('notes').value
+                    };
+                    
+                    return fetch(`${API_BASE}/api/borrowing`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(borrowingData)
+                    });
+                });
+                
+                const responses = await Promise.all(promises);
+                const allSuccess = responses.every(r => r.ok);
+                
+                if (allSuccess) {
+                    showMessage('✓ Borrowing request submitted successfully!', 'success');
+                    document.getElementById('borrowForm').reset();
+                    
+                    setTimeout(() => {
+                        window.location.href = '/inventory';
+                    }, 2000);
+                } else {
+                    showMessage('Failed to submit some items', 'error');
+                }
+            } catch (err) {
+                showMessage('Error: ' + err.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        });
+        
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.className = `message ${type}`;
+        }
+
+        function clearMessage() {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = '';
+            messageDiv.className = 'message';
+        }
+        
+        // QR Code functions
+        async function showSurveyQR() {
+            const qrModal = document.getElementById('qrModal');
+            qrModal.style.display = 'flex';
+            
+            // Generate QR code with link to this survey page
+            try {
+                const QRCode = (await import('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm')).default;
+                const surveyLink = `${API_BASE}/inventory/scan`;
+                const canvas = document.getElementById('qrCanvas');
+                await QRCode.toCanvas(canvas, surveyLink, {
+                    width: 250,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                });
+            } catch (err) {
+                console.error('Error generating QR code:', err);
+                document.getElementById('qrCodeContainer').innerHTML = '<p style="color: #f5576c;">Error generating QR code</p>';
+            }
+        }
+        
+        function closeQRModal() {
+            document.getElementById('qrModal').style.display = 'none';
+        }
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('qrModal');
+            if (event.target === modal) {
+                closeQRModal();
+            }
+        });
+        
+        // Load items on page load
+        window.addEventListener('load', loadItems);
+    </script>
+</body>
+</html>

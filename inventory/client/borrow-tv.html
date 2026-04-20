@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Borrower Kiosk (TV Mode) - Inventory System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #111; color: #fff; }
+        .page-wrap { min-height: 100vh; display: flex; flex-direction: column; }
+        .topbar { background: #0d0d0d; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #444; }
+        .topbar h1 { font-size: 1.4rem; letter-spacing: 0.02em; }
+        .topbar a { color: #67d6e9; font-size: 0.95rem; text-decoration: underline; }
+        .content { flex: 1; display: flex; justify-content: center; align-items: center; padding: 24px; }
+        .kiosk-panel { width: min(920px, 100%); background: #1b1b1b; border-radius: 14px; box-shadow: 0 8px 28px rgba(0,0,0,0.6); padding: 30px; }
+        h2 { margin-bottom: 16px; color: #e0f7ff; }
+        .note { margin-bottom: 18px; color: #b5c7d0; }
+        form .group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; color: #d8eaf1; font-weight: 600; }
+        select, input, textarea { width: 100%; padding: 12px 14px; border-radius: 8px; font-size: 1.05rem; border: 1px solid #333; background: #111; color: #fff; }
+        textarea { min-height: 90px; resize: vertical; }
+        .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .btn-row { display: flex; gap: 12px; margin-top: 6px; }
+        .btn { padding: 12px 18px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+        .btn.submit { background: #38b6ff; color: #04192a; }
+        .btn.submit:hover { filter: brightness(1.08); }
+        .btn.reset { background: #444; color: #f0f7fb; }
+        .btn.open { background: #1f8b4b; color: #fff; }
+        .status { margin-top: 12px; border-radius: 8px; padding: 12px; color: #fff; background: rgba(0,0,0,0.4); font-weight: 600; }
+        .status.success { background: #1f8b4b; }
+        .status.error { background: #8b2f2f; }
+        .item-meta { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
+        .meta-box { background: #141f2b; border: 1px solid #303e55; border-radius: 8px; padding: 10px 12px; font-size: 0.95rem; color: #d8eaf1; }
+        .loading { margin-top: 12px; color: #abdaf9; }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+        <div class="topbar">
+            <h1>📺 Borrower Kiosk (TV Mode)</h1>
+            <a href="/inventory/dashboard" target="_blank">Admin Dashboard (host)</a>
+        </div>
+
+        <div class="content">
+            <div class="kiosk-panel">
+                <h2>Borrower Survey / Borrow Form</h2>
+                <p class="note">This mode is for borrowers on the TV/publc kiosk. It is independent of the admin dashboard and works in parallel.</p>
+
+                <div id="statusMessage" class="status" style="display:none;"></div>
+
+                <div style="margin-bottom: 10px;">
+                    <strong>Choose an item to borrow</strong>
+                </div>
+
+                <form id="kioskForm">
+                    <div class="group">
+                        <label for="itemSelect">Item</label>
+                        <select id="itemSelect" required>
+                            <option value="">Loading available items...</option>
+                        </select>
+                    </div>
+
+                    <div class="item-meta" id="itemMeta" style="display:none;"></div>
+
+                    <div class="grid2">
+                        <div class="group">
+                            <label for="employeeName">Full Name *</label>
+                            <input id="employeeName" type="text" placeholder="Your full name" required />
+                        </div>
+                        <div class="group">
+                            <label for="employeeId">Employee ID *</label>
+                            <input id="employeeId" type="text" placeholder="Employee / student ID" required />
+                        </div>
+                    </div>
+
+                    <div class="grid2">
+                        <div class="group">
+                            <label for="department">Department</label>
+                            <input id="department" type="text" placeholder="Department or group" />
+                        </div>
+                        <div class="group">
+                            <label for="quantity">Quantity *</label>
+                            <input id="quantity" type="number" min="1" value="1" required />
+                        </div>
+                    </div>
+
+                    <div class="group">
+                        <label for="expectedReturnDate">Expected Return Date *</label>
+                        <input id="expectedReturnDate" type="date" required />
+                    </div>
+
+                    <div class="group">
+                        <label for="purpose">Purpose</label>
+                        <textarea id="purpose" placeholder="What are you using this item for?"></textarea>
+                    </div>
+
+                    <div class="group">
+                        <label for="notes">Additional notes</label>
+                        <textarea id="notes" placeholder="Optional notes"></textarea>
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="submit" class="btn submit" id="submitBtn">Submit Borrow Request</button>
+                        <button type="button" class="btn reset" id="clearBtn">Reset</button>
+                        <button type="button" class="btn open" id="openAdminBtn">Open Admin (Host)</button>
+                    </div>
+
+                    <div class="loading" id="loading" style="display:none;">Submitting, please wait...</div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const API_BASE = window.location.origin;
+        const statusMessage = document.getElementById('statusMessage');
+        const itemSelect = document.getElementById('itemSelect');
+        const itemMeta = document.getElementById('itemMeta');
+        const loadingEl = document.getElementById('loading');
+        let items = [];
+
+        const socket = io();
+        socket.on('item-borrowed', (payload) => loadItems());
+        socket.on('item-returned', (payload) => loadItems());
+
+        function setStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status ' + (type === 'success' ? 'success' : 'error');
+            statusMessage.style.display = 'block';
+            if (type === 'success') setTimeout(() => { statusMessage.style.display = 'none'; }, 8000);
+        }
+
+        async function loadItems() {
+            itemSelect.disabled = true;
+            itemSelect.innerHTML = '<option>Loading items…</option>';
+            try {
+                const res = await fetch(`${API_BASE}/api/items/public`);
+                if (!res.ok) throw new Error('Cannot get public item list');
+                items = await res.json();
+                if (!items.length) {
+                    itemSelect.innerHTML = '<option value="">No items available right now</option>';
+                    itemMeta.style.display = 'none';
+                    return;
+                }
+
+                itemSelect.innerHTML = '<option value="">Select item...</option>' +
+                    items.map(i => `<option value="${i._id}">${i.name} (${i.quantity} available)</option>`).join('');
+                itemSelect.disabled = false;
+
+                const selectedId = itemSelect.value;
+                if (selectedId) showMeta(selectedId);
+            } catch (error) {
+                itemSelect.innerHTML = '<option value="">Unable to load items</option>';
+                setStatus('Error loading items: ' + error.message, 'error');
+            }
+        }
+
+        function showMeta(itemId) {
+            const item = items.find(i => i._id === itemId);
+            if (!item) return itemMeta.style.display = 'none';
+            itemMeta.innerHTML = `
+                <div class="meta-box"><strong>Name:</strong><br>${item.name}</div>
+                <div class="meta-box"><strong>Available:</strong><br>${item.quantity}</div>
+                <div class="meta-box"><strong>Location:</strong><br>${item.location || 'N/A'}</div>
+                <div class="meta-box"><strong>Serial:</strong><br>${item.serialNumber || 'N/A'}</div>
+            `;
+            itemMeta.style.display = 'flex';
+            const qtyInput = document.getElementById('quantity');
+            qtyInput.max = item.quantity;
+            if (Number(qtyInput.value) > item.quantity) qtyInput.value = item.quantity || 1;
+        }
+
+        itemSelect.addEventListener('change', (e) => {
+            showMeta(e.target.value);
+        });
+
+        document.getElementById('kioskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!itemSelect.value) {
+                setStatus('Please select an item before submitting.', 'error');
+                return;
+            }
+
+            const quantity = Number(document.getElementById('quantity').value) || 0;
+            const selectedItem = items.find(i => i._id === itemSelect.value);
+            if (!selectedItem || quantity < 1 || quantity > selectedItem.quantity) {
+                setStatus('Invalid quantity for selected item.', 'error');
+                return;
+            }
+
+            const payload = {
+                itemId: selectedItem._id,
+                employeeName: document.getElementById('employeeName').value.trim(),
+                employeeId: document.getElementById('employeeId').value.trim(),
+                department: document.getElementById('department').value.trim(),
+                quantity,
+                expectedReturnDate: document.getElementById('expectedReturnDate').value,
+                purpose: document.getElementById('purpose').value.trim(),
+                notes: document.getElementById('notes').value.trim()
+            };
+
+            if (!payload.employeeName || !payload.employeeId || !payload.expectedReturnDate) {
+                setStatus('Full Name, Employee ID and Expected Return Date are required.', 'error');
+                return;
+            }
+
+            loadingEl.style.display = 'block';
+            try {
+                const res = await fetch(`${API_BASE}/api/borrowing`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Request failed');
+
+                setStatus('Borrow request submitted successfully ✓', 'success');
+                document.getElementById('kioskForm').reset();
+                itemMeta.style.display = 'none';
+                await loadItems();
+            } catch (err) {
+                setStatus('Failed to submit: ' + err.message, 'error');
+            } finally {
+                loadingEl.style.display = 'none';
+            }
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            document.getElementById('kioskForm').reset();
+            itemMeta.style.display = 'none';
+            statusMessage.style.display = 'none';
+        });
+
+        document.getElementById('openAdminBtn').addEventListener('click', () => {
+            window.open('/inventory/dashboard', '_blank');
+        });
+
+        // initialize
+        loadItems();
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('expectedReturnDate').value = today;
+    </script>
+</body>
+</html>

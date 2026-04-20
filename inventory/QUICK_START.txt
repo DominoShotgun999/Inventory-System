@@ -1,0 +1,195 @@
+Inventory System - Quick Start Instructions
+
+SETUP (First Time Only)
+
+Step 1: Open PowerShell
+Navigate to the server directory:
+```
+cd C:\xampp\htdocs\inventory\server
+```
+
+Step 2: Install Dependencies
+Run once:
+```
+npm install
+```
+
+Step 3: Create Admin User
+Run to create your login account:
+```
+node setup.js
+```
+Answer the prompts:
+- Admin username: (e.g., `admin`)
+- Admin password: (e.g., `password123`)
+- Admin name: (e.g., `Your Name`)
+
+Step 4: Load Sample Data (Optional)
+Load 8 sample items for testing:
+```
+node loadSampleData.js
+```
+
+---
+
+HOW TO RUN (Every Time)
+
+In PowerShell (from server directory):
+```
+npm start
+```
+
+The server will start on: http://localhost:5000
+
+Leave this running! Do NOT close it.
+
+---
+
+WHAT TO OPEN IN BROWSER
+
+Home Page:
+```
+http://localhost:5000/inventory
+```
+
+Shows:
+- Admin Login button
+- Borrow Items button
+
+---
+
+ADMIN ACCESS
+
+1. Visit Admin Login:
+```
+http://localhost:5000/inventory/admin
+```
+
+2. Enter Credentials:
+- Username: (what you created in Step 3)
+- Password: (what you created in Step 3)
+
+3. View Admin Dashboard:
+```
+http://localhost:5000/inventory/dashboard
+```
+
+Shows:
+- All inventory items in a table
+- Recent borrowing records
+- Item management options
+
+---
+
+STUDENT/EMPLOYEE ACCESS
+
+1. Visit Borrowing Survey:
+```
+http://localhost:5000/inventory/scan
+```
+
+2. View QR Code (For Demo):
+- Click "View Survey QR Code" button
+- Shows QR code that students can scan with phones
+
+3. Fill Borrowing Form:
+- Enter your name
+- Enter your employee ID
+- Enter your department
+- Select items you want to borrow (checkboxes)
+- Select expected return date
+- Optional: Add purpose or notes
+- Click "Submit Borrowing Request"
+
+---
+
+WORKFLOW EXAMPLE
+
+For Presentation Demo:
+
+1. Show Admin Side:
+   - Open: http://localhost:5000/inventory/admin
+   - Login with credentials
+   - Show dashboard with items and borrowings
+
+2. Show Student Side:
+   - Open: http://localhost:5000/inventory/scan
+   - Click "View Survey QR Code"
+   - Show the QR code
+   - Fill out survey form
+   - Select some items
+   - Submit
+
+3. Admin Verification:
+   - Go back to admin dashboard
+   - Refresh page (F5)
+   - Show new borrowing request in the list
+
+---
+
+HOW TO STOP
+
+In PowerShell where the server is running:
+```
+Ctrl + C
+```
+
+---
+
+MongoDB Connection
+
+- Already configured in `.env` file
+- Using MongoDB Atlas (cloud database)
+- No local setup needed
+
+---
+
+IMPORTANT FILES
+
+If you need to change things:
+
+1. Admin Pages:
+   - `client/admin.html` - Login page
+   - `client/dashboard.html` - Admin dashboard
+
+2. Student Pages:
+   - `client/scan.html` - Borrowing survey form
+   - `client/borrow.html` - Alternative borrowing (not used now)
+
+3. Server Config:
+   - `server/.env` - Database and settings
+   - `server/server.js` - Main server file
+
+---
+
+TROUBLESHOOTING
+
+Server won't start:
+- Make sure MongoDB connection works
+- Check `.env` file is configured
+- Restart PowerShell
+
+Can't login:
+- Make sure you ran `node setup.js` first
+- Use exact username/password you created
+
+Items not showing:
+- Run `node loadSampleData.js` again
+- Refresh browser (Ctrl+F5)
+
+Page won't load:
+- Make sure server is running (`npm start`)
+- Check URL is correct: http://localhost:5000
+
+---
+
+NEXT STEPS AFTER PRESENTATION
+
+1. Get feedback from boss
+2. Tell me what changes/features to add
+3. I'll update the code
+4. Test and deploy to school laptop
+
+---
+
+That's it! Ready to present!
